@@ -1,0 +1,128 @@
+// This is your Prisma schema file for voicework_rsm
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  AUDIO_ENGINEER
+  VIEWER
+}
+
+enum ProjectStatus {
+  INGESTING
+  EXTRACTING
+  SEPARATING
+  READY
+  SURGICAL_PATCHING
+  REMUXING
+  EXPORTED
+  FAILED
+}
+
+enum AssetType {
+  ORIGINAL_VIDEO
+  EXTRACTED_WAV
+  ISOLATED_STEM
+  SURGICAL_PATCH
+  REMUXED_MASTER
+  MEL_SPECTROGRAM_TILE
+}
+
+model Organization {
+  id                 String           @id @default(uuid()) @db.Uuid
+  name               String           @db.VarChar(255)
+  slug               String           @unique @db.VarChar(100)
+  billingTier        String           @default("ENTERPRISE") @map("billing_tier")
+  storageQuotaBytes  BigInt           @default(1099511627776) @map("storage_quota_bytes")
+  storageUsedBytes   BigInt           @default(0) @map("storage_used_bytes")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  
+  projects           Project[]
+  memberships        MembershipRoleMap[]
+
+  @@map("organizations")
+}
+
+model User {
+  id          String              @id @default(uuid()) @db.Uuid
+  email       String              @unique @db.VarChar(255)
+  fullName    String?             @map("full_name") @db.VarChar(255)
+  avatarUrl   String?             @map("avatar_url")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  
+  projects    Project[]
+  memberships MembershipRoleMap[]
+
+  @@map("users")
+}
+
+model MembershipRoleMap {
+  id             String         @id @default(uuid()) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  role           MembershipRole @default(AUDIO_ENGINEER)
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("membership_roles")
+}
+
+model Project {
+  id              String         @id @default(uuid()) @db.Uuid
+  organizationId  String         @map("organization_id") @db.Uuid
+  createdByUserId String?        @map("created_by_user_id") @db.Uuid
+  title           String         @db.VarChar(255)
+  description     String?
+  status          ProjectStatus  @default(INGESTING)
+  sourceType      String         @map("source_type") @db.VarChar(50)
+  sourceUrl       String?        @map("source_url")
+  durationSeconds Float          @default(0.0) @map("duration_seconds")
+  thumbnailUrl    String?        @map("thumbnail_url")
+  hasVideo        Boolean        @default(true) @map("has_video")
+  lastSyncedAt    DateTime       @default(now()) @map("last_synced_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdByUser   User?          @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  mediaAssets     MediaAsset[]
+
+  @@index([organizationId, status])
+  @@index([createdAt(sort: Desc)])
+  @@map("projects")
+}
+
+model MediaAsset {
+  id              String         @id @default(uuid()) @db.Uuid
+  projectId       String         @map("project_id") @db.Uuid
+  assetType       AssetType      @map("asset_type")
+  stemCategory    String?        @map("stem_category") @db.VarChar(64)
+  storageR2Path   String         @map("storage_r2_path")
+  cdnPlaybackUrl  String         @map("cdn_playback_url")
+  fileSizeBytes   BigInt         @map("file_size_bytes")
+  mimeType        String         @map("mime_type") @db.VarChar(100)
+  sampleRate      Int            @default(44100) @map("sample_rate")
+  channels        Int            @default(2)
+  bitDepth        Int            @default(16) @map("bit_depth")
+  durationSeconds Float?         @map("duration_seconds")
+  checksumSha256  String?        @map("checksum_sha256") @db.VarChar(64)
+  metadataJson    Json           @default("{}") @map("metadata_json")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, assetType])
+  @@map("media_assets")
+}

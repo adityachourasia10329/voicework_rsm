@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RedisHotProjectState",
+  "description": "Tier 1: Hot In-Memory Unified State stored under redis key `project:{project_id}:state` with sub-3ms latency.",
+  "type": "object",
+  "required": [
+    "projectId",
+    "orgId",
+    "title",
+    "status",
+    "durationSeconds",
+    "mediaContainer",
+    "mixer",
+    "stems",
+    "surgicalHistory",
+    "updatedAt"
+  ],
+  "properties": {
+    "projectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "orgId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["INGESTING", "EXTRACTING", "SEPARATING", "READY", "SURGICAL_PATCHING", "REMUXING", "EXPORTED", "FAILED"]
+    },
+    "durationSeconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "sourceUrl": {
+      "type": "string"
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": ["UPLOAD", "YOUTUBE"]
+    },
+    "mediaContainer": {
+      "type": "object",
+      "required": ["originalVideoUrl", "masterAudioWavUrl", "videoCodec", "audioCodec", "hasVideo"],
+      "properties": {
+        "originalVideoUrl": { "type": ["string", "null"] },
+        "masterAudioWavUrl": { "type": "string" },
+        "videoCodec": { "type": ["string", "null"] },
+        "audioCodec": { "type": "string" },
+        "hasVideo": { "type": "boolean" },
+        "remuxedMasterUrl": { "type": ["string", "null"] }
+      }
+    },
+    "mixer": {
+      "type": "object",
+      "required": ["mode", "masterGainDb", "expressClarityDial", "preset"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["EXPRESS", "FULL_AUTHORITY"]
+        },
+        "masterGainDb": {
+          "type": "number",
+          "minimum": -60,
+          "maximum": 6
+        },
+        "expressClarityDial": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "preset": {
+          "type": ["string", "null"],
+          "enum": ["VOICE_ONLY", "NATURAL_AMBIENT_CLEAN", "REMOVE_MUSIC", "CUSTOM", null]
+        }
+      }
+    },
+    "stems": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/StemTrack"
+      }
+    },
+    "spectrogram": {
+      "type": "object",
+      "properties": {
+        "tileCount": { "type": "integer" },
+        "tileWidthSeconds": { "type": "number" },
+        "tilesBaseUrl": { "type": "string" },
+        "fftBins": { "type": "integer", "default": 1024 },
+        "sampleRate": { "type": "integer", "default": 44100 }
+      }
+    },
+    "surgicalHistory": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SurgicalRevision"
+      }
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "isDirty": {
+      "type": "boolean",
+      "description": "Flag for asynchronous write-behind persistence worker to write back to PostgreSQL & MongoDB"
+    }
+  },
+  "definitions": {
+    "StemTrack": {
+      "type": "object",
+      "required": ["stemId", "type", "label", "audioUrl", "volumeDb", "isMuted", "isSolo", "pan", "colorHex"],
+      "properties": {
+        "stemId": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "SPEECH_MAIN",
+            "BACKING_VOCALS",
+            "NOISE_TRAFFIC",
+            "NOISE_CROWD",
+            "NOISE_ROOM_TONE",
+            "NOISE_INDUSTRIAL_HUM",
+            "NOISE_TRANSIENTS",
+            "NOISE_WIND",
+            "MUSIC_INSTRUMENTAL",
+            "MUSIC_DRUMS",
+            "MUSIC_BASS",
+            "MUSIC_OTHER"
+          ]
+        },
+        "label": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "volumeDb": { "type": "number", "minimum": -60, "maximum": 6 },
+        "isMuted": { "type": "boolean" },
+        "isSolo": { "type": "boolean" },
+        "pan": { "type": "number", "minimum": -1, "maximum": 1 },
+        "colorHex": { "type": "string" }
+      }
+    },
+    "SurgicalRevision": {
+      "type": "object",
+      "required": ["revisionId", "startSec", "endSec", "flagType", "appliedModel", "status", "timestamp"],
+      "properties": {
+        "revisionId": { "type": "string", "format": "uuid" },
+        "startSec": { "type": "number" },
+        "endSec": { "type": "number" },
+        "flagType": {
+          "type": "string",
+          "enum": ["VOICE_MUFFLED_LOST", "RESIDUAL_NOISE_AUDIBLE", "BLEED_FROM_BACKGROUND"]
+        },
+        "appliedModel": { "type": "string" },
+        "crossfadeWindowSec": { "type": "number", "default": 2.0 },
+        "status": {
+          "type": "string",
+          "enum": ["QUEUED", "PROCESSING", "PATCHED", "FAILED"]
+        },
+        "patchedStemUrl": { "type": ["string", "null"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

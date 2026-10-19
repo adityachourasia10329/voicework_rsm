@@ -1,0 +1,17 @@
+name = "voicework_rsm"
+compatibility_date = "2026-10-19"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages Configuration
+pages_build_output_dir = "frontend/.next"
+
+# Cloudflare R2 Object Storage Binding for lossless video and stem storage
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "voicework-rsm-media"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+PROJECT_NAME = "voicework_rsm"
+REDIS_TIER = "dragonfly-hot-memory"

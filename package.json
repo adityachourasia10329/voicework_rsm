@@ -1,0 +1,21 @@
+{
+  "name": "voicework_rsm",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Enterprise AI Audio Separation, Video Remuxing, and Visual Spectrogram Editing",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "deploy:pages": "wrangler pages deploy frontend/.next --project-name=voicework_rsm"
+  },
+  "keywords": [
+    "audio-separation",
+    "video-remuxing",
+    "spectrogram-editor",
+    "bs-roformer",
+    "deepfilternet",
+    "cloudflare-pages"
+  ],
+  "author": "RSM Architecture"
+}
