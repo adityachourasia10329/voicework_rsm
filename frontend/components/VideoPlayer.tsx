@@ -50,9 +50,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   return (
-    <div className="relative glass-panel rounded-2xl overflow-hidden border border-border group bg-black">
+    <div className="bg-white rounded border border-zerodha-border overflow-hidden shadow-sm flex flex-col justify-between">
       {/* Video Canvas */}
-      <div className="relative aspect-video w-full flex items-center justify-center">
+      <div className="relative aspect-video w-full bg-slate-900 flex items-center justify-center">
         {videoUrl ? (
           <video
             ref={videoRef}
@@ -64,36 +64,36 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             onClick={onTogglePlay}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-gray-500">
-            <Volume2 className="w-12 h-12 mb-2 text-accent" />
+          <div className="flex flex-col items-center justify-center text-gray-400">
+            <Volume2 className="w-10 h-10 mb-2 text-zerodha-blue" />
             <span className="text-xs font-mono">Audio-Only Master Container</span>
           </div>
         )}
 
-        {/* Big play overlay when paused */}
+        {/* Center play button when paused */}
         {!isPlaying && (
           <button
             onClick={onTogglePlay}
-            className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-accent/90 hover:bg-accent text-white flex items-center justify-center shadow-xl shadow-accent/40 backdrop-blur-md transition-transform hover:scale-110 active:scale-95"
+            className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-zerodha-blue hover:bg-zerodha-blue-hover text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105"
           >
-            <Play className="w-8 h-8 ml-1" />
+            <Play className="w-6 h-6 ml-1" />
           </button>
         )}
       </div>
 
-      {/* Embedded Controls Bar */}
-      <div className="p-3 bg-surface/80 border-t border-border flex items-center justify-between text-xs font-mono">
+      {/* Embedded Controls Bar - Zerodha Clean Toolbar */}
+      <div className="p-3 bg-white border-t border-zerodha-border flex items-center justify-between text-xs font-mono">
         <div className="flex items-center space-x-2">
           <button
             onClick={onTogglePlay}
-            className="p-1.5 rounded-lg bg-surface-elevated hover:bg-accent text-white transition-colors"
+            className="p-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-heading transition-colors"
           >
             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </button>
 
           <button
             onClick={() => onTimeUpdate(Math.max(0, currentTime - 5))}
-            className="p-1.5 rounded-lg bg-surface-elevated hover:bg-surface text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
             title="Rewind 5s"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -101,28 +101,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
           <button
             onClick={() => onTimeUpdate(Math.min(duration, currentTime + 5))}
-            className="p-1.5 rounded-lg bg-surface-elevated hover:bg-surface text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
             title="Forward 5s"
           >
             <RotateCw className="w-3.5 h-3.5" />
           </button>
 
-          <div className="text-gray-300 font-semibold px-2 py-0.5 rounded bg-surface border border-border">
+          <div className="text-zerodha-heading font-medium px-2 py-0.5 rounded bg-gray-50 border border-zerodha-border">
             <span>{formatTimecode(currentTime)}</span>
-            <span className="text-gray-500 mx-1">/</span>
-            <span className="text-gray-400">{formatTimecode(duration)}</span>
+            <span className="text-gray-400 mx-1">/</span>
+            <span className="text-zerodha-muted">{formatTimecode(duration)}</span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 text-gray-400">
-          <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-            Synced Frame-for-Frame
+        <div className="flex items-center space-x-2 text-zerodha-muted">
+          <span className="text-[10px] text-zerodha-green font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            Frame Synced
           </span>
           <button
             onClick={() => {
               if (videoRef.current) videoRef.current.requestFullscreen?.();
             }}
-            className="p-1.5 rounded-lg hover:bg-surface-elevated text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
           >
             <Maximize2 className="w-4 h-4" />
           </button>

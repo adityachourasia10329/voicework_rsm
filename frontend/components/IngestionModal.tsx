@@ -33,21 +33,20 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
 
   const handleStartIngestion = async () => {
     setIsProcessing(true);
-    setProgressStep('Ingesting stream container & probing codecs...');
+    setProgressStep('Probing media streams and container metadata...');
 
     try {
-      // Simulation or Live API call
       setTimeout(() => {
-        setProgressStep('FFmpeg lossless PCM extraction (-acodec pcm_s16le)...');
-      }, 700);
+        setProgressStep('FFmpeg lossless audio extraction (-acodec pcm_s16le)...');
+      }, 600);
 
       setTimeout(() => {
-        setProgressStep('Audio chunker: 60s overlapping windows with 2s crossfade...');
-      }, 1400);
+        setProgressStep('Audio chunker: 60s windows with 2s crossfades (OOM Guard)...');
+      }, 1200);
 
       setTimeout(() => {
         setProgressStep('Running BS-RoFormer stem isolation & DeepFilterNet3 speech recovery...');
-      }, 2100);
+      }, 1900);
 
       setTimeout(() => {
         const newProjId = 'proj-' + Math.random().toString(36).substring(2, 9);
@@ -84,7 +83,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: 0.0,
-              colorHex: '#10B981'
+              colorHex: '#26a69a'
             },
             {
               stemId: 'stem-tr-1',
@@ -95,7 +94,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: -0.2,
-              colorHex: '#EF4444'
+              colorHex: '#df514c'
             },
             {
               stemId: 'stem-cr-1',
@@ -106,7 +105,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: 0.2,
-              colorHex: '#3B82F6'
+              colorHex: '#387ed1'
             },
             {
               stemId: 'stem-mu-1',
@@ -117,7 +116,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: 0.0,
-              colorHex: '#A855F7'
+              colorHex: '#7c3aed'
             }
           ],
           surgicalHistory: [],
@@ -127,7 +126,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
         setIsProcessing(false);
         onProjectCreated(newProject);
         onClose();
-      }, 3000);
+      }, 2600);
 
     } catch (err) {
       setIsProcessing(false);
@@ -136,31 +135,31 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl glass-panel-elevated rounded-2xl p-6 shadow-2xl border border-border">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-xl bg-white rounded-lg p-6 shadow-xl border border-zerodha-border">
         {/* Close Button */}
         <button
           onClick={onClose}
           disabled={isProcessing}
-          className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-surface transition-colors"
+          className="absolute top-4 right-4 p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-bold text-white flex items-center space-x-2">
-          <UploadCloud className="w-6 h-6 text-accent" />
+        <h2 className="text-base font-semibold text-zerodha-heading flex items-center space-x-2">
+          <UploadCloud className="w-5 h-5 text-zerodha-blue" />
           <span>Ingest Media Stream</span>
         </h2>
-        <p className="text-xs text-gray-400 mt-1">
-          Supports arbitrary length files (30m to 2h+). Lossless audio extraction &amp; GPU chunking with 2s crossfades.
+        <p className="text-xs text-zerodha-muted mt-0.5">
+          Supports arbitrary length files (30m to 2h+). Lossless audio extraction &amp; GPU chunking.
         </p>
 
         {/* Tab selection */}
-        <div className="flex border-b border-border mt-5">
+        <div className="flex border-b border-zerodha-border mt-4 text-xs font-medium">
           <button
             onClick={() => setTab('upload')}
-            className={`flex items-center space-x-2 px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
-              tab === 'upload' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-gray-200'
+            className={`flex items-center space-x-2 px-4 py-2 border-b-2 transition-colors ${
+              tab === 'upload' ? 'border-zerodha-blue text-zerodha-blue font-semibold' : 'border-transparent text-zerodha-muted hover:text-zerodha-heading'
             }`}
           >
             <UploadCloud className="w-4 h-4" />
@@ -168,25 +167,25 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
           </button>
           <button
             onClick={() => setTab('youtube')}
-            className={`flex items-center space-x-2 px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
-              tab === 'youtube' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-gray-200'
+            className={`flex items-center space-x-2 px-4 py-2 border-b-2 transition-colors ${
+              tab === 'youtube' ? 'border-zerodha-blue text-zerodha-blue font-semibold' : 'border-transparent text-zerodha-muted hover:text-zerodha-heading'
             }`}
           >
-            <Youtube className="w-4 h-4 text-red-400" />
+            <Youtube className="w-4 h-4 text-red-500" />
             <span>YouTube Stream (yt-dlp)</span>
           </button>
         </div>
 
         {/* Form Body */}
-        <div className="mt-5 space-y-4">
+        <div className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-300 mb-1">Project Title</label>
+            <label className="block text-xs font-medium text-zerodha-heading mb-1">Project Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Broadcast Episode 24 - Voice Master"
-              className="w-full px-3 py-2 text-xs rounded-lg bg-surface border border-border text-white placeholder-gray-500 focus:outline-none focus:border-accent"
+              className="w-full px-3 py-2 text-xs rounded border border-zerodha-border bg-gray-50 focus:bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue"
             />
           </div>
 
@@ -194,19 +193,19 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleFileDrop}
-              className="border-2 border-dashed border-border hover:border-accent/60 rounded-xl p-8 text-center cursor-pointer transition-colors bg-surface/50"
+              className="border-2 border-dashed border-gray-200 hover:border-zerodha-blue rounded p-8 text-center cursor-pointer transition-colors bg-gray-50/60"
               onClick={() => document.getElementById('file-input')?.click()}
             >
-              <UploadCloud className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+              <UploadCloud className="w-8 h-8 text-zerodha-muted mx-auto mb-2" />
               {file ? (
-                <div className="text-xs text-emerald-400 font-medium flex items-center justify-center space-x-1">
+                <div className="text-xs text-zerodha-green font-medium flex items-center justify-center space-x-1">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(1)} MB)</span>
                 </div>
               ) : (
                 <>
-                  <p className="text-xs text-gray-300 font-medium">Click or drag &amp; drop video or audio file</p>
-                  <p className="text-[10px] text-gray-500 mt-1">MP4, MOV, MKV, WAV, FLAC, MP3 (No duration limit)</p>
+                  <p className="text-xs text-zerodha-heading font-medium">Click or drag &amp; drop video or audio file</p>
+                  <p className="text-[11px] text-zerodha-muted mt-1">MP4, MOV, MKV, WAV, FLAC, MP3 (No duration limit)</p>
                 </>
               )}
               <input
@@ -224,31 +223,31 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1">YouTube Video URL</label>
+              <label className="block text-xs font-medium text-zerodha-heading mb-1">YouTube Video URL</label>
               <input
                 type="url"
                 value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full px-3 py-2 text-xs rounded-lg bg-surface border border-border text-white placeholder-gray-500 focus:outline-none focus:border-accent font-mono"
+                className="w-full px-3 py-2 text-xs rounded border border-zerodha-border bg-gray-50 focus:bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue font-mono"
               />
-              <p className="text-[10px] text-gray-500 mt-1">
-                Ingested directly using high-speed headless `yt-dlp` stream extraction.
+              <p className="text-[11px] text-zerodha-muted mt-1">
+                Extracted losslessly using headless `yt-dlp` stream capture.
               </p>
             </div>
           )}
 
-          {/* Model and Enhancement settings */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          {/* Model selection */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1 flex items-center space-x-1">
-                <Cpu className="w-3.5 h-3.5 text-accent" />
-                <span>Stem Separation Model</span>
+              <label className="block text-xs font-medium text-zerodha-heading mb-1 flex items-center space-x-1">
+                <Cpu className="w-3.5 h-3.5 text-zerodha-blue" />
+                <span>Separation Model</span>
               </label>
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg bg-surface border border-border text-white focus:outline-none focus:border-accent"
+                className="w-full px-3 py-1.5 text-xs rounded border border-zerodha-border bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue"
               >
                 <option value="bs-roformer-v2">BS-RoFormer v2 (SOTA Multi-Stem)</option>
                 <option value="melband-roformer">Mel-Band RoFormer (HD Audio)</option>
@@ -257,8 +256,8 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1 flex items-center space-x-1">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <label className="block text-xs font-medium text-zerodha-heading mb-1 flex items-center space-x-1">
+                <Sparkles className="w-3.5 h-3.5 text-zerodha-green" />
                 <span>Speech Enhancement</span>
               </label>
               <div className="flex items-center space-x-2 mt-2">
@@ -267,37 +266,37 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
                   id="deepfilter"
                   checked={deepFilter}
                   onChange={(e) => setDeepFilter(e.target.checked)}
-                  className="rounded bg-surface border-border text-accent focus:ring-0 w-4 h-4"
+                  className="rounded border-gray-300 text-zerodha-blue focus:ring-0 w-4 h-4"
                 />
-                <label htmlFor="deepfilter" className="text-xs text-gray-300 cursor-pointer">
-                  DeepFilterNet3 Post-Cleaning
+                <label htmlFor="deepfilter" className="text-xs text-zerodha-text cursor-pointer">
+                  DeepFilterNet3 Cleaning
                 </label>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Progress or Actions */}
-        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+        {/* Footer Actions */}
+        <div className="mt-5 pt-3 border-t border-zerodha-border flex items-center justify-between">
           {isProcessing ? (
-            <div className="w-full flex items-center space-x-3">
-              <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs text-accent font-mono animate-pulse">{progressStep}</span>
+            <div className="w-full flex items-center space-x-2.5">
+              <div className="w-3.5 h-3.5 border-2 border-zerodha-blue border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-zerodha-blue font-mono">{progressStep}</span>
             </div>
           ) : (
             <>
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-xs font-medium text-zerodha-muted hover:text-zerodha-heading transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleStartIngestion}
                 disabled={tab === 'upload' ? !file : !youtubeUrl}
-                className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-lg shadow-accent/20 transition-all"
+                className="px-5 py-2 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover disabled:opacity-50 text-white text-xs font-medium shadow-sm transition-all"
               >
-                Start Demixing Pipeline
+                Start Separation Pipeline
               </button>
             </>
           )}

@@ -8,24 +8,31 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#090D16',
-        surface: '#111726',
-        'surface-elevated': '#182035',
-        border: '#1E293B',
-        accent: '#6366F1',
-        'accent-hover': '#4F46E5',
-        stem: {
-          speech: '#10B981',
-          traffic: '#EF4444',
-          crowd: '#3B82F6',
-          hum: '#F97316',
-          music: '#A855F7',
-          ambient: '#14B8A6'
-        }
+        zerodha: {
+          blue: '#387ed1',
+          'blue-hover': '#2e6bb5',
+          'blue-light': '#ebf3fc',
+          text: '#424242',
+          heading: '#222222',
+          muted: '#666666',
+          border: '#e0e0e0',
+          'border-light': '#eeeeee',
+          bg: '#fbfbfb',
+          card: '#ffffff',
+          green: '#26a69a',
+          red: '#df514c',
+          orange: '#ff9800',
+        },
+        background: '#fbfbfb',
+        surface: '#ffffff',
+        'surface-elevated': '#f4f5f7',
+        border: '#e5e7eb',
+        accent: '#387ed1',
+        'accent-hover': '#2e6bb5',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
     },
   },

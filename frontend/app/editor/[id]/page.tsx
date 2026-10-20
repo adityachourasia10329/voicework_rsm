@@ -16,13 +16,13 @@ import {
   Sliders,
   Sparkles,
   Download,
-  Archive,
   Save,
   CheckCircle2,
   Clock,
   History,
   Activity,
-  Layers
+  Layers,
+  FileAudio
 } from 'lucide-react';
 
 export default function EditorPage() {
@@ -45,7 +45,6 @@ export default function EditorPage() {
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   useEffect(() => {
-    // Find project from initial seed or memory store
     const found = INITIAL_PROJECTS.find((p) => p.projectId === projectId) || INITIAL_PROJECTS[0];
     if (found) {
       setProject(JSON.parse(JSON.stringify(found)));
@@ -55,10 +54,10 @@ export default function EditorPage() {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-white font-mono">
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-          <span>Fetching Hot State from Redis Tier 1 (&lt; 3ms)...</span>
+      <div className="min-h-screen bg-zerodha-bg flex items-center justify-center text-zerodha-text font-mono">
+        <div className="flex items-center space-x-3 bg-white p-6 rounded border border-zerodha-border shadow-sm">
+          <div className="w-4 h-4 border-2 border-zerodha-blue border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm">Retrieving project state from Redis Hot Cache (&lt; 3ms)...</span>
         </div>
       </div>
     );
@@ -118,7 +117,6 @@ export default function EditorPage() {
   const handleChangeClarity = (val: number) => {
     setProject((prev) => {
       if (!prev) return null;
-      // Dynamically attenuate noise stems proportional to dial
       const suppressionDb = -10 - (val / 100) * 45;
       const updatedStems = prev.stems.map((s) => {
         if (s.type.includes('NOISE')) {
@@ -134,7 +132,6 @@ export default function EditorPage() {
     });
   };
 
-  // Surgical micro-inference application
   const handleApplyPatch = (revision: SurgicalRevision) => {
     setProject((prev) => {
       if (!prev) return null;
@@ -156,7 +153,7 @@ export default function EditorPage() {
       setIsSaving(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
-    }, 400);
+    }, 300);
   };
 
   const handleRemuxExport = () => {
@@ -166,86 +163,86 @@ export default function EditorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="min-h-screen bg-zerodha-bg pb-20">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {/* Top Navigation & Project Meta Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        {/* Top Navigation & Workspace Title Bar */}
+        <div className="bg-white rounded border border-zerodha-border p-4 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
             <Link
               href="/"
-              className="p-2 rounded-xl bg-surface hover:bg-surface-elevated border border-border text-gray-300 hover:text-white transition-colors"
+              className="p-1.5 rounded border border-zerodha-border hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold text-white tracking-tight">{project.title}</h1>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
+                <h1 className="text-base font-semibold text-zerodha-heading tracking-tight">{project.title}</h1>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
                   {project.status}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 font-mono mt-0.5">
-                ID: {project.projectId} &bull; Duration: {Math.floor(project.durationSeconds / 60)}m {Math.floor(project.durationSeconds % 60)}s
+              <p className="text-xs text-zerodha-muted font-mono mt-0.5">
+                ID: {project.projectId.slice(0, 18)}... &bull; Duration: {Math.floor(project.durationSeconds / 60)}m {Math.floor(project.durationSeconds % 60)}s
               </p>
             </div>
           </div>
 
-          {/* Mode Selector & Quick Export Actions */}
+          {/* Mode Selector & Clean Export Actions */}
           <div className="flex items-center space-x-3">
             {/* Express Mode vs Full Authority Mode Switch */}
-            <div className="flex items-center bg-surface p-1 rounded-xl border border-border">
+            <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
               <button
                 onClick={() => setEditorMode('EXPRESS')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium transition-colors ${
                   editorMode === 'EXPRESS'
-                    ? 'bg-accent text-white shadow-md shadow-accent/25'
-                    : 'text-gray-400 hover:text-gray-200'
+                    ? 'bg-zerodha-blue text-white'
+                    : 'bg-white text-zerodha-muted hover:bg-gray-50'
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Express Mode</span>
+                <span>Express</span>
               </button>
 
               <button
                 onClick={() => setEditorMode('FULL_AUTHORITY')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
                   editorMode === 'FULL_AUTHORITY'
-                    ? 'bg-accent text-white shadow-md shadow-accent/25'
-                    : 'text-gray-400 hover:text-gray-200'
+                    ? 'bg-zerodha-blue text-white'
+                    : 'bg-white text-zerodha-muted hover:bg-gray-50'
                 }`}
               >
                 <Sliders className="w-3.5 h-3.5" />
-                <span>Full Authority Mode</span>
+                <span>Full Authority</span>
               </button>
             </div>
 
-            {/* Save to In-Memory Hot State */}
+            {/* Sync State Button */}
             <button
               onClick={handleSaveToRedis}
               disabled={isSaving}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-surface hover:bg-surface-elevated border border-border text-xs font-medium text-gray-200 hover:text-white transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-xs font-medium text-zerodha-text transition-colors"
             >
               {saveSuccess ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span className="text-emerald-400 font-mono">Synced (&lt;3ms)</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-zerodha-green" />
+                  <span className="text-zerodha-green font-mono">Synced (&lt;3ms)</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4 text-gray-400" />
+                  <Save className="w-3.5 h-3.5 text-zerodha-muted" />
                   <span>Sync State</span>
                 </>
               )}
             </button>
 
-            {/* Remux Export */}
+            {/* Remux Export Button */}
             <button
               onClick={handleRemuxExport}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-105"
+              className="flex items-center space-x-1.5 px-4 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-3.5 h-3.5" />
               <span>Remux Video (-c:v copy)</span>
             </button>
           </div>
@@ -297,44 +294,44 @@ export default function EditorPage() {
 
           {/* Surgical Revisions History Log (Audit Trail) */}
           {project.surgicalHistory && project.surgicalHistory.length > 0 && (
-            <div className="glass-panel rounded-2xl p-4 border border-border">
-              <div className="flex items-center justify-between mb-3 border-b border-border pb-2">
-                <div className="flex items-center space-x-2 text-xs font-bold text-white">
-                  <History className="w-4 h-4 text-accent" />
-                  <span>Surgical Revision Audit Log (Micro-Patches)</span>
+            <div className="bg-white rounded border border-zerodha-border p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-zerodha-border">
+                <div className="flex items-center space-x-2 text-xs font-semibold text-zerodha-heading">
+                  <History className="w-4 h-4 text-zerodha-blue" />
+                  <span>Surgical Revision Audit Log</span>
                 </div>
-                <span className="text-[10px] font-mono text-gray-400">
-                  {project.surgicalHistory.length} Re-processed Brackets
+                <span className="text-[11px] font-mono text-zerodha-muted">
+                  {project.surgicalHistory.length} re-processed intervals
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="divide-y divide-gray-100">
                 {project.surgicalHistory.map((rev) => (
                   <div
                     key={rev.revisionId}
-                    className="p-2.5 rounded-xl bg-surface/70 border border-border flex items-center justify-between text-xs font-mono"
+                    className="py-2.5 flex items-center justify-between text-xs font-mono"
                   >
                     <div className="flex items-center space-x-3">
-                      <span className="px-2 py-0.5 rounded bg-accent/20 text-accent font-bold border border-accent/30">
+                      <span className="px-2 py-0.5 rounded bg-blue-50 text-zerodha-blue font-medium border border-blue-200">
                         {rev.flagType}
                       </span>
-                      <span className="text-gray-300 font-semibold">
-                        Interval: {rev.startSec}s &rarr; {rev.endSec}s ({(rev.endSec - rev.startSec).toFixed(1)}s)
+                      <span className="text-zerodha-heading font-medium">
+                        {rev.startSec}s &rarr; {rev.endSec}s ({(rev.endSec - rev.startSec).toFixed(1)}s)
                       </span>
-                      <span className="text-gray-500 text-[11px]">
-                        Model: {rev.appliedModel} (Crossfade: {rev.crossfadeWindowSec}s)
+                      <span className="text-zerodha-muted text-[11px]">
+                        {rev.appliedModel} (Crossfade: {rev.crossfadeWindowSec}s)
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      <span className="text-emerald-400 text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                        Spliced into Master
+                    <div className="flex items-center space-x-3">
+                      <span className="text-zerodha-green text-[11px] font-medium">
+                        &bull; Spliced into Master
                       </span>
                       <button
                         onClick={() => setCurrentTime(rev.startSec)}
-                        className="px-2 py-1 rounded bg-surface-elevated hover:bg-accent text-gray-300 hover:text-white transition-colors text-[10px]"
+                        className="px-2.5 py-1 rounded border border-zerodha-border hover:bg-gray-50 text-zerodha-text transition-colors text-[11px]"
                       >
-                        Seek Bracket
+                        Seek
                       </button>
                     </div>
                   </div>
