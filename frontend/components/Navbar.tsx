@@ -2,13 +2,29 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Waves, Plus, Layers, ShieldCheck, Activity } from 'lucide-react';
+import { Waves, Plus, Layers, LayoutDashboard, FolderKanban } from 'lucide-react';
 
 interface NavbarProps {
   onOpenIngest?: () => void;
+  activeTab?: 'dashboard' | 'gallery';
+  onTabChange?: (tab: 'dashboard' | 'gallery') => void;
+  projectCount?: number;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenIngest }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onOpenIngest,
+  activeTab = 'dashboard',
+  onTabChange,
+  projectCount
+}) => {
+  const handleNavClick = (tab: 'dashboard' | 'gallery') => {
+    if (onTabChange) {
+      onTabChange(tab);
+    } else {
+      window.location.href = `/?tab=${tab}`;
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-zerodha-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -25,20 +41,52 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIngest }) => {
           </div>
         </Link>
 
-        {/* Center Links & Status */}
-        <div className="hidden md:flex items-center space-x-8 text-sm text-zerodha-muted">
-          <Link href="/" className="text-zerodha-heading font-medium hover:text-zerodha-blue transition-colors">
-            Dashboard
-          </Link>
-          <span className="text-gray-300">|</span>
-          <div className="flex items-center space-x-2 text-xs font-mono">
-            <span className="w-2 h-2 rounded-full bg-zerodha-green" />
-            <span className="text-gray-600">Redis Tier 1:</span>
-            <span className="text-zerodha-green font-semibold">&lt; 3ms</span>
+        {/* Center Links: Dashboard & Gallery Option right beside each other */}
+        <div className="flex items-center space-x-8 text-sm">
+          <div className="flex items-center space-x-6">
+            <button
+              onClick={() => handleNavClick('dashboard')}
+              className={`pb-1 flex items-center space-x-1.5 border-b-2 font-medium transition-all ${
+                activeTab === 'dashboard'
+                  ? 'text-zerodha-blue border-zerodha-blue font-semibold'
+                  : 'text-zerodha-muted border-transparent hover:text-zerodha-heading'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              onClick={() => handleNavClick('gallery')}
+              className={`pb-1 flex items-center space-x-1.5 border-b-2 font-medium transition-all ${
+                activeTab === 'gallery'
+                  ? 'text-zerodha-blue border-zerodha-blue font-semibold'
+                  : 'text-zerodha-muted border-transparent hover:text-zerodha-heading'
+              }`}
+            >
+              <FolderKanban className="w-4 h-4" />
+              <span>Gallery</span>
+              {projectCount !== undefined && (
+                <span className="text-[11px] font-mono px-1.5 py-0.2 rounded-full bg-blue-50 text-zerodha-blue border border-blue-200 font-semibold">
+                  {projectCount}
+                </span>
+              )}
+            </button>
           </div>
-          <div className="flex items-center space-x-2 text-xs font-mono text-gray-500">
-            <span>Lossless Engine:</span>
-            <span className="font-semibold text-gray-700">FFmpeg -c:v copy</span>
+
+          <span className="hidden md:inline text-gray-300">|</span>
+
+          {/* Real-time Architecture Status Indicators */}
+          <div className="hidden lg:flex items-center space-x-6 text-xs font-mono">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-zerodha-green" />
+              <span className="text-gray-500">Redis Tier 1:</span>
+              <span className="text-zerodha-green font-semibold">&lt; 3ms</span>
+            </div>
+            <div className="flex items-center space-x-2 text-gray-500">
+              <span>Lossless Engine:</span>
+              <span className="font-semibold text-gray-700">FFmpeg -c:v copy</span>
+            </div>
           </div>
         </div>
 
@@ -54,15 +102,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIngest }) => {
             </button>
           )}
 
-          <Link
-            href="/"
-            className="p-2 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
+          <button
+            onClick={() => handleNavClick('gallery')}
+            className={`p-2 rounded border transition-colors ${
+              activeTab === 'gallery'
+                ? 'border-zerodha-blue bg-blue-50 text-zerodha-blue'
+                : 'border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading'
+            }`}
             title="Projects Gallery"
           >
             <Layers className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </div>
     </header>
   );
 };
+
