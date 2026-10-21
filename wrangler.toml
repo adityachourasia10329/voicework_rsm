@@ -3,7 +3,7 @@ compatibility_date = "2026-10-19"
 compatibility_flags = ["nodejs_compat"]
 
 # Cloudflare Pages Configuration
-pages_build_output_dir = "frontend/.next"
+pages_build_output_dir = "frontend/out"
 
 # Cloudflare R2 Object Storage Binding for lossless video and stem storage
 [[r2_buckets]]
