@@ -3,6 +3,7 @@
 import React from 'react';
 import { StemTrack } from '../lib/types';
 import { SlidersHorizontal } from 'lucide-react';
+import { FlyingBox } from './FlyingBox';
 
 interface StemMixerProps {
   stems: StemTrack[];
@@ -26,6 +27,11 @@ export const StemMixer: React.FC<StemMixerProps> = ({
           <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-gray-100 text-zerodha-muted border border-gray-200">
             Faders: -∞ to +6dB
           </span>
+          <FlyingBox
+            title="Multi-Stem Audio Mixer"
+            content="Independently balance the loudness of each sound layer. Speech, traffic, crowd, and music can be adjusted separately without affecting each other."
+            recommendation="Click 'S' to Solo a track and listen to it alone; click 'M' to mute it."
+          />
         </div>
 
         {/* Master Output Gain */}

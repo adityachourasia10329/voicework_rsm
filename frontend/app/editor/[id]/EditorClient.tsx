@@ -9,6 +9,8 @@ import { SpectrogramCanvas } from '../../../components/SpectrogramCanvas';
 import { StemMixer } from '../../../components/StemMixer';
 import { ExpressControls } from '../../../components/ExpressControls';
 import { SurgicalModal } from '../../../components/SurgicalModal';
+import { DownloadModal } from '../../../components/DownloadModal';
+import { FlyingBox } from '../../../components/FlyingBox';
 import { INITIAL_PROJECTS } from '../../../lib/mockData';
 import { ProjectState, StemTrack, PresetMode, EditorMode, SurgicalRevision } from '../../../lib/types';
 import {
@@ -18,7 +20,8 @@ import {
   Download,
   Save,
   CheckCircle2,
-  History
+  History,
+  FileAudio
 } from 'lucide-react';
 
 interface EditorClientProps {
@@ -37,6 +40,9 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   // Surgical modal state
   const [isSurgicalOpen, setIsSurgicalOpen] = useState<boolean>(false);
   const [surgicalRange, setSurgicalRange] = useState<{ start: number; end: number }>({ start: 0, end: 5 });
+
+  // Download edited file modal state (Requirements 1 & 5)
+  const [isDownloadOpen, setIsDownloadOpen] = useState<boolean>(false);
 
   // Save/Export state
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -155,9 +161,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   };
 
   const handleRemuxExport = () => {
-    alert(
-      `Lossless Video Remuxing initialized!\nFFmpeg command: ffmpeg -i original.mp4 -i refined_master.wav -c:v copy -map 0:v:0 -map 1:a:0 -shortest output.mp4\nVideo streams copied untouched with zero quality loss.`
-    );
+    setIsDownloadOpen(true);
   };
 
   return (
@@ -180,6 +184,10 @@ export default function EditorClient({ projectId }: EditorClientProps) {
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
                   {project.status}
                 </span>
+                <FlyingBox
+                  title="Session Workspace"
+                  content="This workspace lets you mix isolated stems, inspect audio waves across frequency octaves, surgically repair defects, and download the finished master video or audio."
+                />
               </div>
               <p className="text-xs text-zerodha-muted font-mono mt-0.5">
                 ID: {project.projectId.slice(0, 18)}... &bull; Duration: {Math.floor(project.durationSeconds / 60)}m {Math.floor(project.durationSeconds % 60)}s
@@ -190,30 +198,36 @@ export default function EditorClient({ projectId }: EditorClientProps) {
           {/* Mode Selector & Clean Export Actions */}
           <div className="flex items-center space-x-3">
             {/* Express Mode vs Full Authority Mode Switch */}
-            <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
-              <button
-                onClick={() => setEditorMode('EXPRESS')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium transition-colors ${
-                  editorMode === 'EXPRESS'
-                    ? 'bg-zerodha-blue text-white'
-                    : 'bg-white text-zerodha-muted hover:bg-gray-50'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Express</span>
-              </button>
+            <div className="flex items-center space-x-1.5">
+              <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
+                <button
+                  onClick={() => setEditorMode('EXPRESS')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium transition-colors ${
+                    editorMode === 'EXPRESS'
+                      ? 'bg-zerodha-blue text-white'
+                      : 'bg-white text-zerodha-muted hover:bg-gray-50'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Express</span>
+                </button>
 
-              <button
-                onClick={() => setEditorMode('FULL_AUTHORITY')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
-                  editorMode === 'FULL_AUTHORITY'
-                    ? 'bg-zerodha-blue text-white'
-                    : 'bg-white text-zerodha-muted hover:bg-gray-50'
-                }`}
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                <span>Full Authority</span>
-              </button>
+                <button
+                  onClick={() => setEditorMode('FULL_AUTHORITY')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
+                    editorMode === 'FULL_AUTHORITY'
+                      ? 'bg-zerodha-blue text-white'
+                      : 'bg-white text-zerodha-muted hover:bg-gray-50'
+                  }`}
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span>Full Authority</span>
+                </button>
+              </div>
+              <FlyingBox
+                title="Editor Mode Switch"
+                content="Express Mode gives you a fast 1-dial clarity slider for automatic noise removal. Full Authority mode provides a multi-channel mixer with individual stem volume faders."
+              />
             </div>
 
             {/* Sync State Button */}
@@ -234,22 +248,26 @@ export default function EditorClient({ projectId }: EditorClientProps) {
                 </>
               )}
             </button>
+            <FlyingBox
+              title="Redis Hot Cache Sync"
+              content="Saves all fader levels and surgical intervals into Tier 1 in-memory Redis in <3ms. Keeps your work preserved."
+            />
 
             {/* Remux Export Button */}
             <button
-              onClick={handleRemuxExport}
+              onClick={() => setIsDownloadOpen(true)}
               className="flex items-center space-x-1.5 px-4 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Remux Video (-c:v copy)</span>
+              <span>Export Master</span>
             </button>
           </div>
         </div>
 
         {/* Top Grid: Video Canvas & Spectrogram Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-          {/* Synced Video Player */}
-          <div className="lg:col-span-5">
+          {/* Synced Video Player & Dedicated Download Option Underneath Preview (Requirements 1 & 5) */}
+          <div className="lg:col-span-5 space-y-3">
             <VideoPlayer
               videoUrl={project.mediaContainer.originalVideoUrl}
               currentTime={currentTime}
@@ -258,6 +276,46 @@ export default function EditorClient({ projectId }: EditorClientProps) {
               onTimeUpdate={(t) => setCurrentTime(t)}
               onTogglePlay={() => setIsPlaying(!isPlaying)}
             />
+
+            {/* Download Option for the New Edited File Directly Under Video Preview */}
+            <div className="bg-white p-3.5 rounded border border-zerodha-border shadow-sm flex flex-col justify-between space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5">
+                  <Download className="w-4 h-4 text-zerodha-blue" />
+                  <span className="text-xs font-semibold text-zerodha-heading">Download Edited Master File</span>
+                  <FlyingBox
+                    title="Export Edited File"
+                    content="Download your refined video or audio file. Choose from MP4, MOV, MKV, WAV, FLAC, or MP3 with lossless video stream copy (-c:v copy)."
+                    recommendation="Click the button to select your target container format and audio mix options."
+                  />
+                </div>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Ready to Export
+                </span>
+              </div>
+
+              <p className="text-[11px] text-zerodha-muted leading-relaxed">
+                Lossless remuxing guarantees zero video compression artifacts. Prompts you to pick your preferred format before downloading.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
+                <div className="flex flex-wrap gap-1">
+                  {['MP4', 'MOV', 'MKV', 'WAV', 'FLAC', 'MP3'].map((fmt) => (
+                    <span key={fmt} className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-gray-100 text-gray-700 border border-gray-200">
+                      {fmt}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setIsDownloadOpen(true)}
+                  className="px-3.5 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all flex items-center space-x-1.5 flex-shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Choose Format &amp; Download</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Interactive Spectrogram & Multi-Band Frequency Waves Visualizer */}
@@ -348,6 +406,15 @@ export default function EditorClient({ projectId }: EditorClientProps) {
         projectId={project.projectId}
         onClose={() => setIsSurgicalOpen(false)}
         onApplyPatch={handleApplyPatch}
+      />
+
+      {/* Download Edited File Format Modal (Requirements 1 & 5) */}
+      <DownloadModal
+        isOpen={isDownloadOpen}
+        onClose={() => setIsDownloadOpen(false)}
+        projectTitle={project.title}
+        durationSeconds={project.durationSeconds}
+        hasVideo={project.mediaContainer.hasVideo}
       />
     </div>
   );

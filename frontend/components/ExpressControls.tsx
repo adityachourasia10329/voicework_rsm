@@ -3,6 +3,7 @@
 import React from 'react';
 import { PresetMode } from '../lib/types';
 import { Sparkles, Sliders, Volume2, ShieldCheck, Music } from 'lucide-react';
+import { FlyingBox } from './FlyingBox';
 
 interface ExpressControlsProps {
   clarityDial: number;
@@ -24,6 +25,10 @@ export const ExpressControls: React.FC<ExpressControlsProps> = ({
           <h3 className="text-sm font-semibold text-zerodha-heading flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-zerodha-blue" />
             <span>Express mode &bull; One-touch speech enhancement</span>
+            <FlyingBox
+              title="Express Mode"
+              content="Designed for rapid editing. Choose a pre-tuned preset (Voice Only, Natural Ambient Clean, Remove Music) or turn the Clarity Dial to clean speech automatically."
+            />
           </h3>
           <p className="text-xs text-zerodha-muted mt-0.5">
             Quick studio presets and automatic background noise suppression.

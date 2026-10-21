@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, UploadCloud, Youtube, Cpu, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ProjectState } from '../lib/types';
+import { FlyingBox } from './FlyingBox';
 
 interface IngestionModalProps {
   isOpen: boolean;
@@ -239,20 +240,79 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
 
           {/* Model selection */}
           <div className="grid grid-cols-2 gap-3 pt-1">
-            <div>
-              <label className="block text-xs font-medium text-zerodha-heading mb-1 flex items-center space-x-1">
-                <Cpu className="w-3.5 h-3.5 text-zerodha-blue" />
-                <span>Separation Model</span>
-              </label>
+            <div className="col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-zerodha-heading flex items-center space-x-1">
+                  <Cpu className="w-3.5 h-3.5 text-zerodha-blue" />
+                  <span>Separation Model</span>
+                  <FlyingBox
+                    title="Choosing a Separation Model"
+                    content="Each neural model is trained for different acoustic challenges. BS-RoFormer is best for voice vs music; Mel-Band preserves high-end audio fidelity; HTDemucs handles multi-layer crowd and street noise."
+                    recommendation="BS-RoFormer v2 is recommended for general podcasts and studio video."
+                  />
+                </label>
+                <span className="text-[10px] font-mono text-zerodha-blue font-semibold">
+                  {model === 'bs-roformer-v2' ? '★ Top Quality' : model === 'melband-roformer' ? '★ High Res 48kHz' : '★ 6-Stem Multi-Noise'}
+                </span>
+              </div>
+
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs rounded border border-zerodha-border bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue"
+                className="w-full px-3 py-1.5 text-xs rounded border border-zerodha-border bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue font-mono"
               >
                 <option value="bs-roformer-v2">BS-RoFormer v2 (SOTA Multi-Stem)</option>
                 <option value="melband-roformer">Mel-Band RoFormer (HD Audio)</option>
                 <option value="htdemucs-v4">HTDemucs v4 (6-Stem Demixing)</option>
               </select>
+
+              {/* Dynamic Flying Explanatory Box for the selected model (Requirement 7) */}
+              <div className="mt-2 p-2.5 rounded bg-blue-50/70 border border-blue-200 text-xs">
+                {model === 'bs-roformer-v2' && (
+                  <div>
+                    <div className="font-semibold text-zerodha-heading text-[11px] flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-blue-600" />
+                      <span>Best for: Dialogue &amp; Music Separation</span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
+                      SOTA Band-Split RoFormer. Extreme precision with near-zero acoustic bleed. Isolates speech while preserving voice resonance.
+                    </p>
+                    <div className="text-[10px] text-blue-700 font-mono mt-1">
+                      <strong>Ideal Use Case:</strong> Video podcasts, interviews with intro music, voice-overs.
+                    </div>
+                  </div>
+                )}
+
+                {model === 'melband-roformer' && (
+                  <div>
+                    <div className="font-semibold text-zerodha-heading text-[11px] flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                      <span>Best for: Studio HD Master Audio (44.1/48kHz)</span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
+                      Mel-frequency scale architecture designed specifically for high-sample-rate audio. Preserves delicate high-frequency air and vocal harmonics without artificial artifacts.
+                    </p>
+                    <div className="text-[10px] text-emerald-800 font-mono mt-1">
+                      <strong>Ideal Use Case:</strong> Broadcast mastering, acoustic field recordings, documentary audio.
+                    </div>
+                  </div>
+                )}
+
+                {model === 'htdemucs-v4' && (
+                  <div>
+                    <div className="font-semibold text-zerodha-heading text-[11px] flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-purple-600" />
+                      <span>Best for: Heavy Multi-Source Noise &amp; Crowds</span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
+                      Hybrid Transformer Demucs by Meta AI. Separates up to 6 distinct acoustic layers (speech, crowd, traffic, ambient room tone, industrial hum).
+                    </p>
+                    <div className="text-[10px] text-purple-800 font-mono mt-1">
+                      <strong>Ideal Use Case:</strong> Outdoor vlog recordings, busy market conventions, live events.
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
