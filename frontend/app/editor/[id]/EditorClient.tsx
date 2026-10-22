@@ -8,6 +8,7 @@ import { VideoPlayer } from '../../../components/VideoPlayer';
 import { SpectrogramCanvas } from '../../../components/SpectrogramCanvas';
 import { StemMixer } from '../../../components/StemMixer';
 import { ExpressControls } from '../../../components/ExpressControls';
+import { StemEliminator } from '../../../components/StemEliminator';
 import { SurgicalModal } from '../../../components/SurgicalModal';
 import { DownloadModal } from '../../../components/DownloadModal';
 import { FlyingBox } from '../../../components/FlyingBox';
@@ -21,7 +22,9 @@ import {
   Save,
   CheckCircle2,
   History,
-  FileAudio
+  FileAudio,
+  SlidersHorizontal,
+  FolderKanban
 } from 'lucide-react';
 
 interface EditorClientProps {
@@ -31,11 +34,12 @@ interface EditorClientProps {
 export default function EditorClient({ projectId }: EditorClientProps) {
   const router = useRouter();
 
-  // Project state
+  // Project state and current selected project
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(projectId);
   const [project, setProject] = useState<ProjectState | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [editorMode, setEditorMode] = useState<EditorMode>('FULL_AUTHORITY');
+  const [editorMode, setEditorMode] = useState<EditorMode>('STEMS_REMOVAL');
 
   // Surgical modal state
   const [isSurgicalOpen, setIsSurgicalOpen] = useState<boolean>(false);
@@ -49,12 +53,11 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   useEffect(() => {
-    const found = INITIAL_PROJECTS.find((p) => p.projectId === projectId) || INITIAL_PROJECTS[0];
+    const found = INITIAL_PROJECTS.find((p) => p.projectId === selectedProjectId) || INITIAL_PROJECTS[0];
     if (found) {
       setProject(JSON.parse(JSON.stringify(found)));
-      setEditorMode(found.mixer?.mode || 'FULL_AUTHORITY');
     }
-  }, [projectId]);
+  }, [selectedProjectId]);
 
   if (!project) {
     return (
@@ -146,6 +149,27 @@ export default function EditorClient({ projectId }: EditorClientProps) {
     });
   };
 
+  const handleApplyRefinedAudio = (cleanedStems: StemTrack[], revisionSummary: string) => {
+    setProject((prev) => {
+      if (!prev) return null;
+      const newRev: SurgicalRevision = {
+        revisionId: `rev-stem-clean-${Date.now()}`,
+        startSec: 0,
+        endSec: prev.durationSeconds,
+        flagType: 'RESIDUAL_NOISE_AUDIBLE',
+        appliedModel: 'BS-RoFormer + DeepFilterNet3 Stems Subtraction',
+        status: 'PATCHED',
+        crossfadeWindowSec: 2.0,
+        timestamp: new Date().toISOString()
+      };
+      return {
+        ...prev,
+        stems: cleanedStems,
+        surgicalHistory: [newRev, ...(prev.surgicalHistory || [])]
+      };
+    });
+  };
+
   const handleOpenSurgical = (startSec: number, endSec: number) => {
     setSurgicalRange({ start: startSec, end: endSec });
     setIsSurgicalOpen(true);
@@ -166,7 +190,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
   return (
     <div className="min-h-screen bg-zerodha-bg pb-20">
-      <Navbar projectCount={INITIAL_PROJECTS.length} />
+      <Navbar projectCount={INITIAL_PROJECTS.length} activeTab="editor" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* Top Navigation & Workspace Title Bar */}
@@ -175,6 +199,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
             <Link
               href="/"
               className="p-1.5 rounded border border-zerodha-border hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
+              title="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
@@ -186,47 +211,81 @@ export default function EditorClient({ projectId }: EditorClientProps) {
                 </span>
                 <FlyingBox
                   title="Session Workspace"
-                  content="This workspace lets you mix isolated stems, inspect audio waves across frequency octaves, surgically repair defects, and download the finished master video or audio."
+                  content="This workspace lets you mix isolated stems, inspect audio waves across frequency octaves, surgically repair defects, eliminate unwanted instruments or traffic, and download the finished master video or audio."
                 />
               </div>
-              <p className="text-xs text-zerodha-muted font-mono mt-0.5">
-                ID: {project.projectId.slice(0, 18)}... &bull; Duration: {Math.floor(project.durationSeconds / 60)}m {Math.floor(project.durationSeconds % 60)}s
-              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-zerodha-muted font-mono">
+                <span>Duration: {Math.floor(project.durationSeconds / 60)}m {Math.floor(project.durationSeconds % 60)}s</span>
+                <span>&bull;</span>
+                <div className="flex items-center space-x-1.5">
+                  <FolderKanban className="w-3.5 h-3.5 text-zerodha-blue" />
+                  <span className="text-gray-600 font-medium">Session:</span>
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => {
+                      setSelectedProjectId(e.target.value);
+                      router.push(`/editor/${e.target.value}`);
+                    }}
+                    className="px-2 py-0.5 text-xs rounded border border-zerodha-border bg-gray-50 hover:bg-white text-zerodha-heading font-medium focus:outline-none focus:border-zerodha-blue cursor-pointer max-w-[210px] sm:max-w-[320px] truncate"
+                  >
+                    {INITIAL_PROJECTS.map((p) => (
+                      <option key={p.projectId} value={p.projectId}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Mode Selector & Clean Export Actions */}
           <div className="flex items-center space-x-3">
-            {/* Express Mode vs Full Authority Mode Switch */}
+            {/* 3-Tier Mode Selector: Stems Eliminator, Full Authority, Express */}
             <div className="flex items-center space-x-1.5">
               <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
                 <button
-                  onClick={() => setEditorMode('EXPRESS')}
+                  onClick={() => setEditorMode('STEMS_REMOVAL')}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium transition-colors ${
-                    editorMode === 'EXPRESS'
-                      ? 'bg-zerodha-blue text-white'
+                    editorMode === 'STEMS_REMOVAL'
+                      ? 'bg-zerodha-blue text-white font-semibold'
                       : 'bg-white text-zerodha-muted hover:bg-gray-50'
                   }`}
+                  title="Stems & Noise Eliminator (Instruments, Traffic, Sound removal)"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Express</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Stems &amp; Noise</span>
                 </button>
 
                 <button
                   onClick={() => setEditorMode('FULL_AUTHORITY')}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
                     editorMode === 'FULL_AUTHORITY'
-                      ? 'bg-zerodha-blue text-white'
+                      ? 'bg-zerodha-blue text-white font-semibold'
                       : 'bg-white text-zerodha-muted hover:bg-gray-50'
                   }`}
+                  title="Full Authority multi-channel mixer"
                 >
                   <Sliders className="w-3.5 h-3.5" />
-                  <span>Full Authority</span>
+                  <span>Mixer</span>
+                </button>
+
+                <button
+                  onClick={() => setEditorMode('EXPRESS')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
+                    editorMode === 'EXPRESS'
+                      ? 'bg-zerodha-blue text-white font-semibold'
+                      : 'bg-white text-zerodha-muted hover:bg-gray-50'
+                  }`}
+                  title="1-dial express clarity"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Express</span>
                 </button>
               </div>
               <FlyingBox
                 title="Editor Mode Switch"
-                content="Express Mode gives you a fast 1-dial clarity slider for automatic noise removal. Full Authority mode provides a multi-channel mixer with individual stem volume faders."
+                content="Stems & Noise lets you eliminate specific instruments, traffic, or noise boxes. Mixer provides multi-channel faders. Express provides a fast 1-dial clarity slider."
               />
             </div>
 
@@ -330,9 +389,15 @@ export default function EditorClient({ projectId }: EditorClientProps) {
           </div>
         </div>
 
-        {/* Bottom Section: Two-Tier UX Hierarchy (Express Controls vs Multi-Stem Mixer) */}
+        {/* Bottom Section: Three-Tier UX Hierarchy (Stems Eliminator vs Express vs Multi-Stem Mixer) */}
         <div className="space-y-6">
-          {editorMode === 'EXPRESS' ? (
+          {editorMode === 'STEMS_REMOVAL' ? (
+            <StemEliminator
+              project={project}
+              onApplyRefinedAudio={handleApplyRefinedAudio}
+              onOpenDownloadModal={() => setIsDownloadOpen(true)}
+            />
+          ) : editorMode === 'EXPRESS' ? (
             <ExpressControls
               clarityDial={project.mixer.expressClarityDial}
               currentPreset={project.mixer.preset}

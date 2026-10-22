@@ -60,7 +60,7 @@ export interface MediaContainer {
   remuxedMasterUrl?: string | null;
 }
 
-export type EditorMode = 'EXPRESS' | 'FULL_AUTHORITY';
+export type EditorMode = 'EXPRESS' | 'FULL_AUTHORITY' | 'STEMS_REMOVAL';
 export type PresetMode = 'VOICE_ONLY' | 'NATURAL_AMBIENT_CLEAN' | 'REMOVE_MUSIC' | 'CUSTOM' | null;
 
 export interface MixerState {

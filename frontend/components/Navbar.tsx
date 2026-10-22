@@ -2,12 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Waves, Plus, Layers, LayoutDashboard, FolderKanban } from 'lucide-react';
+import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal } from 'lucide-react';
 
 interface NavbarProps {
   onOpenIngest?: () => void;
-  activeTab?: 'dashboard' | 'gallery';
-  onTabChange?: (tab: 'dashboard' | 'gallery') => void;
+  activeTab?: 'dashboard' | 'gallery' | 'editor';
+  onTabChange?: (tab: 'dashboard' | 'gallery' | 'editor') => void;
   projectCount?: number;
 }
 
@@ -17,11 +17,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   projectCount
 }) => {
-  const handleNavClick = (tab: 'dashboard' | 'gallery') => {
+  const handleNavClick = (tab: 'dashboard' | 'gallery' | 'editor') => {
     if (onTabChange) {
       onTabChange(tab);
     } else {
-      window.location.href = `/?tab=${tab}`;
+      if (tab === 'editor') {
+        window.location.href = '/editor';
+      } else {
+        window.location.href = `/?tab=${tab}`;
+      }
     }
   };
 
@@ -41,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </Link>
 
-        {/* Center Links: Dashboard & Gallery Option right beside each other */}
+        {/* Center Links: Dashboard, Gallery, and Editor Option right beside each other */}
         <div className="flex items-center space-x-8 text-sm">
           <div className="flex items-center space-x-6">
             <button
@@ -71,6 +75,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {projectCount}
                 </span>
               )}
+            </button>
+
+            <button
+              onClick={() => handleNavClick('editor')}
+              className={`pb-1 flex items-center space-x-1.5 border-b-2 font-medium transition-all ${
+                activeTab === 'editor'
+                  ? 'text-zerodha-blue border-zerodha-blue font-semibold'
+                  : 'text-zerodha-muted border-transparent hover:text-zerodha-heading'
+              }`}
+              title="Open Editor Space"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span>Editor</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200 font-semibold">
+                Studio
+              </span>
             </button>
           </div>
 

@@ -22,7 +22,7 @@ import {
 
 export default function HomePage() {
   const [projects, setProjects] = useState<ProjectState[]>(INITIAL_PROJECTS);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'gallery'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'gallery' | 'editor'>('dashboard');
   const [isIngestOpen, setIsIngestOpen] = useState(false);
   const [ytUrl, setYtUrl] = useState('');
 
@@ -35,11 +35,17 @@ export default function HomePage() {
         setActiveTab('gallery');
       } else if (tabParam === 'dashboard') {
         setActiveTab('dashboard');
+      } else if (tabParam === 'editor') {
+        window.location.href = '/editor';
       }
     }
   }, []);
 
-  const handleTabChange = (tab: 'dashboard' | 'gallery') => {
+  const handleTabChange = (tab: 'dashboard' | 'gallery' | 'editor') => {
+    if (tab === 'editor') {
+      window.location.href = '/editor';
+      return;
+    }
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
@@ -98,6 +104,13 @@ export default function HomePage() {
                 >
                   <FolderKanban className="w-4 h-4 text-zerodha-blue" />
                   <span>Open Projects Gallery ({projects.length})</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('editor')}
+                  className="px-6 py-2.5 rounded border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-900 text-sm font-medium transition-all flex items-center space-x-2"
+                >
+                  <Sliders className="w-4 h-4 text-purple-600" />
+                  <span>Launch Editor Mode</span>
                 </button>
               </div>
             </div>
