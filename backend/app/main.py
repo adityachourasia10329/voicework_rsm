@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .cache.redis_store import hot_store
-from .api import ingestion, projects, surgical, export
+from .api import ingestion, projects, surgical, export, webhooks, cron, videos
 
 app = FastAPI(
     title="VoiceWork RSM API",
@@ -33,6 +33,9 @@ app.include_router(ingestion.router)
 app.include_router(projects.router)
 app.include_router(surgical.router)
 app.include_router(export.router)
+app.include_router(webhooks.router)
+app.include_router(cron.router)
+app.include_router(videos.router)
 
 # Seed realistic demo projects into Tier 1 Hot In-Memory Cache on startup
 def seed_demo_projects():
@@ -40,13 +43,35 @@ def seed_demo_projects():
     demo_id_2 = "3e9b1192-8f12-4d22-b541-118274920c82"
 
     state_1 = {
+        "id": demo_id_1,
         "projectId": demo_id_1,
+        "code": "7K9Q2",
+        "youtube_id": "demo_lex_412",
+        "youtubeId": "demo_lex_412",
         "orgId": "org-rsm-enterprise-01",
         "title": "Lex Fridman Interview #412 - Studio Denoise & Stem Isolation",
-        "status": "READY",
+        "status": "ready",
         "durationSeconds": 142.5,
+        "duration_seconds": 142.5,
         "sourceType": "YOUTUBE",
         "sourceUrl": "https://www.youtube.com/watch?v=demo_lex",
+        "original_video_url": "https://www.youtube.com/watch?v=demo_lex",
+        "thumbnail_url": "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80",
+        "transcript": "Welcome to the podcast. Today my guest is discussing artificial intelligence, deep neural networks for audio processing, and how lossless stem extraction transforms production quality.",
+        "captions": [
+            {"start": 0.0, "end": 4.2, "text": "Welcome to the podcast."},
+            {"start": 4.2, "end": 10.5, "text": "Today my guest is discussing artificial intelligence and neural audio processing."}
+        ],
+        "clips": [
+            {"clip_id": "clip-lex-01", "title": "AI Breakthrough Discussion", "start_time": 0.0, "end_time": 35.0, "viral_score": 94.2}
+        ],
+        "virality_score": 94.2,
+        "virality_metrics": {
+            "pacing": 92,
+            "hookRetention": 96,
+            "audioClarity": 98
+        },
+
         "mediaContainer": {
             "originalVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             "masterAudioWavUrl": "/audio/master_lex.wav",
@@ -134,13 +159,34 @@ def seed_demo_projects():
     }
 
     state_2 = {
+        "id": demo_id_2,
         "projectId": demo_id_2,
+        "code": "B4T81",
+        "youtube_id": "market_station_doc",
+        "youtubeId": "market_station_doc",
         "orgId": "org-rsm-enterprise-01",
         "title": "Documentary Field Recording - Busy Market & Train Station",
-        "status": "READY",
+        "status": "ready",
         "durationSeconds": 94.0,
+        "duration_seconds": 94.0,
         "sourceType": "UPLOAD",
         "sourceUrl": "/storage/uploads/market_doc.mov",
+        "original_video_url": "/storage/uploads/market_doc.mov",
+        "thumbnail_url": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80",
+        "transcript": "Capturing ambient field sounds across the central transit hub and busy street bazaar. Multi-mic binaural recording.",
+        "captions": [
+            {"start": 0.0, "end": 6.0, "text": "Capturing ambient field sounds across the central transit hub."},
+            {"start": 6.0, "end": 14.2, "text": "Notice the separation between the train engine low-frequency rumble and surrounding human voices."}
+        ],
+        "clips": [
+            {"clip_id": "clip-mkt-01", "title": "Train Station Rumble Isolation", "start_time": 2.0, "end_time": 28.0, "viral_score": 87.5}
+        ],
+        "virality_score": 87.5,
+        "virality_metrics": {
+            "pacing": 88,
+            "hookRetention": 84,
+            "audioClarity": 92
+        },
         "mediaContainer": {
             "originalVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
             "masterAudioWavUrl": "/audio/market_master.wav",
@@ -156,6 +202,7 @@ def seed_demo_projects():
             "expressClarityDial": 75.0,
             "preset": "NATURAL_AMBIENT_CLEAN"
         },
+
         "stems": [
             {
                 "stemId": "stem-mkt-speech",

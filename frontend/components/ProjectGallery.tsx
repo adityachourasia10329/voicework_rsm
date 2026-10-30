@@ -47,12 +47,20 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
   };
 
   const filteredProjects = projects.filter((p) => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = searchTerm.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      p.title.toLowerCase().includes(q) ||
+      (p.code && p.code.toLowerCase().includes(q)) ||
+      (p.youtubeId && p.youtubeId.toLowerCase().includes(q)) ||
+      (p.transcript && p.transcript.toLowerCase().includes(q));
+
     if (filterType === 'ALL') return matchesSearch;
     if (filterType === 'VIDEO') return matchesSearch && p.mediaContainer.hasVideo;
     if (filterType === 'AUDIO') return matchesSearch && !p.mediaContainer.hasVideo;
     return matchesSearch;
   });
+
 
   return (
     <div className="glass-panel rounded-2xl p-6 sm:p-7 shadow-2xl">
@@ -151,8 +159,17 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
 
                 <div>
                   <div className="flex items-center space-x-2.5">
+                    {project.code && (
+                      <Link
+                        href={`/editor/${project.code}`}
+                        className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-[#FF4D36]/15 text-[#FF7A59] border border-[#FF4D36]/30 font-bold tracking-widest hover:bg-[#FF4D36]/25 transition-all shadow-[0_0_8px_rgba(255,77,54,0.15)] flex-shrink-0"
+                        title="5-character collision-proof identifier. Click to open session."
+                      >
+                        #{project.code}
+                      </Link>
+                    )}
                     <Link
-                      href={`/editor/${project.projectId}`}
+                      href={`/editor/${project.code || project.projectId}`}
                       className="text-sm sm:text-base font-heading font-semibold text-white hover:text-[#FF7A59] transition-colors line-clamp-1"
                     >
                       {project.title}
@@ -160,11 +177,18 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#27A376]/15 text-[#33C287] border border-[#27A376]/30 font-semibold tracking-wider">
                       {project.status}
                     </span>
+                    {project.virality_score !== undefined && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#6B70F0]/15 text-[#8E93FF] border border-[#6B70F0]/30 font-medium hidden sm:inline-flex items-center space-x-1" title="Virality Rating">
+                        <span>🔥</span>
+                        <span>{project.virality_score}% Viral</span>
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-[#9FA4B8] font-mono">
                     <span className="flex items-center space-x-1">
                       <Clock className="w-3.5 h-3.5 text-[#646982]" />
+
                       <span>{formatDuration(project.durationSeconds)}</span>
                     </span>
                     <span>&bull;</span>
@@ -192,12 +216,13 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
               {/* Right Action Buttons */}
               <div className="flex items-center space-x-2.5 flex-shrink-0">
                 <Link
-                  href={`/editor/${project.projectId}`}
+                  href={`/editor/${project.code || project.projectId}`}
                   className="btn-coral px-4 py-2 rounded-xl text-xs font-semibold shadow-[0_4px_16px_rgba(255,77,54,0.35)] flex items-center space-x-1.5"
                 >
                   <Sliders className="w-3.5 h-3.5" />
                   <span>Open Studio</span>
                 </Link>
+
 
                 <button
                   onClick={() => alert(`Starting zero-loss video remuxing with FFmpeg (-c:v copy) for project ${project.projectId}...`)}

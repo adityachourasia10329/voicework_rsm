@@ -70,20 +70,52 @@ export interface MixerState {
   preset: PresetMode;
 }
 
+export interface VideoCaption {
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface VideoClip {
+  clip_id: string;
+  title: string;
+  start_time: number;
+  end_time: number;
+  viral_score: number;
+}
+
+export interface ViralityMetrics {
+  pacing?: number;
+  hookRetention?: number;
+  audioClarity?: number;
+  [key: string]: any;
+}
+
 export interface ProjectState {
   projectId: string;
+  code?: string; // 5-character alphanumeric uppercase ID (e.g. '7K9Q2', 'B4T81')
+  youtubeId?: string;
+  youtube_id?: string;
   orgId: string;
   title: string;
   status: ProjectStatus;
   durationSeconds: number;
   sourceType: 'UPLOAD' | 'YOUTUBE';
   sourceUrl?: string;
+  originalVideoUrl?: string;
   mediaContainer: MediaContainer;
   mixer: MixerState;
   stems: StemTrack[];
   surgicalHistory: SurgicalRevision[];
+  transcript?: string;
+  captions?: VideoCaption[];
+  clips?: VideoClip[];
+  virality_score?: number;
+  virality_metrics?: ViralityMetrics;
   updatedAt?: string;
+  createdAt?: string;
 }
+
 
 export interface SoundEvent {
   startSec: number;

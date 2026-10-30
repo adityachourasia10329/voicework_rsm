@@ -126,3 +126,24 @@ model MediaAsset {
   @@index([projectId, assetType])
   @@map("media_assets")
 }
+
+model Video {
+  id               String   @id @default(uuid()) @db.Uuid
+  code             String   @unique @db.VarChar(5)
+  youtubeId        String   @unique @map("youtube_id") @db.VarChar(32)
+  title            String   @db.Text
+  durationSeconds  Decimal  @default(0) @map("duration_seconds") @db.Decimal
+  thumbnailUrl     String?  @map("thumbnail_url") @db.Text
+  originalVideoUrl String?  @map("original_video_url") @db.Text
+  transcript       String?  @db.Text
+  captions         Json     @default("[]") @map("captions")
+  clips            Json     @default("[]") @map("clips")
+  viralityScore    Decimal  @default(0) @map("virality_score") @db.Decimal
+  viralityMetrics  Json     @default("{}") @map("virality_metrics")
+  status           String   @default("ready") @db.VarChar(32)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([code], name: "idx_videos_code")
+  @@map("videos")
+}
+

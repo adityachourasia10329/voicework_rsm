@@ -57,11 +57,18 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   useEffect(() => {
-    const found = INITIAL_PROJECTS.find((p) => p.projectId === selectedProjectId) || INITIAL_PROJECTS[0];
+    const found =
+      INITIAL_PROJECTS.find(
+        (p) =>
+          p.projectId.toLowerCase() === selectedProjectId.toLowerCase() ||
+          (p.code && p.code.toUpperCase() === selectedProjectId.toUpperCase()) ||
+          (p.youtubeId && p.youtubeId.toLowerCase() === selectedProjectId.toLowerCase())
+      ) || INITIAL_PROJECTS[0];
     if (found) {
       setProject(JSON.parse(JSON.stringify(found)));
     }
   }, [selectedProjectId]);
+
 
   if (!project) {
     return (
@@ -216,6 +223,14 @@ export default function EditorClient({ projectId }: EditorClientProps) {
             <div>
               <div className="flex items-center space-x-2.5">
                 <h1 className="text-base sm:text-lg font-heading font-bold text-white tracking-tight">{project.title}</h1>
+                {project.code && (
+                  <span
+                    className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-[#FF4D36]/15 text-[#FF7A59] border border-[#FF4D36]/30 font-bold tracking-widest shadow-[0_0_10px_rgba(255,77,54,0.2)]"
+                    title="5-character collision-proof identifier"
+                  >
+                    #{project.code}
+                  </span>
+                )}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#27A376]/15 text-[#33C287] border border-[#27A376]/30 font-semibold tracking-wider">
                   {project.status}
                 </span>
@@ -231,7 +246,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
                   <FolderKanban className="w-3.5 h-3.5 text-[#6B70F0]" />
                   <span className="text-white/70 font-medium">Session:</span>
                   <select
-                    value={selectedProjectId}
+                    value={project.code || selectedProjectId}
                     onChange={(e) => {
                       setSelectedProjectId(e.target.value);
                       router.push(`/editor/${e.target.value}`);
@@ -239,13 +254,14 @@ export default function EditorClient({ projectId }: EditorClientProps) {
                     className="px-2.5 py-1 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white font-medium focus:outline-none focus:border-[#FF4D36] cursor-pointer max-w-[210px] sm:max-w-[320px] truncate"
                   >
                     {INITIAL_PROJECTS.map((p) => (
-                      <option key={p.projectId} value={p.projectId}>
-                        {p.title}
+                      <option key={p.projectId} value={p.code || p.projectId}>
+                        {p.code ? `[#${p.code}] ` : ''}{p.title}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
+
             </div>
           </div>
 

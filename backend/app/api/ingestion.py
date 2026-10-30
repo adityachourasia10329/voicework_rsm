@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from ..cache.redis_store import hot_store
+from ..core.code_generator import generate_unique_code
 from ..core.demuxer import MediaDemuxer
 from ..core.separator import StemSeparationEngine
 from ..core.sed_classifier import SoundEventClassifier
@@ -68,16 +69,34 @@ async def ingest_file_upload(
         # Generate isolated stems
         stems = StemSeparationEngine.separate_wav(wav_path, os.path.join(project_dir, "stems"))
 
-        # Build initial project state
+        # Generate collision-proof 5-character alphanumeric code
+        code = generate_unique_code(hot_store.is_code_taken)
         project_title = title or os.path.splitext(filename)[0].replace("_", " ").title()
+        
         state = {
+            "id": project_id,
             "projectId": project_id,
+            "code": code,
+            "youtube_id": f"upload_{project_id[:8]}",
+            "youtubeId": f"upload_{project_id[:8]}",
             "orgId": org_id,
             "title": project_title,
-            "status": "READY",
+            "status": "ready",
             "durationSeconds": round(duration_sec, 2),
+            "duration_seconds": round(duration_sec, 2),
             "sourceType": "UPLOAD",
             "sourceUrl": f"/storage/uploads/{project_id}/source{file_ext}",
+            "original_video_url": f"/storage/uploads/{project_id}/source{file_ext}" if has_video else None,
+            "thumbnail_url": "/thumbnails/video_placeholder.jpg",
+            "transcript": f"Transcription for uploaded asset {project_title}.",
+            "captions": [],
+            "clips": [],
+            "virality_score": 50.0,
+            "virality_metrics": {
+                "pacing": 70,
+                "hookRetention": 65,
+                "audioClarity": 85
+            },
             "mediaContainer": {
                 "originalVideoUrl": f"/storage/uploads/{project_id}/source{file_ext}" if has_video else None,
                 "masterAudioWavUrl": f"/storage/uploads/{project_id}/master_audio.wav",
@@ -96,8 +115,9 @@ async def ingest_file_upload(
             "surgicalHistory": []
         }
 
-        hot_store.set_project_state(project_id, state)
-        return {"status": "SUCCESS", "projectId": project_id, "project": state}
+        hot_store.set_video(state)
+        return {"status": "SUCCESS", "projectId": project_id, "code": code, "project": state}
+
 
     except Exception as e:
         logger.error(f"Ingestion failed: {e}")
@@ -142,22 +162,48 @@ async def ingest_youtube_stream(req: YouTubeIngestRequest):
         MediaDemuxer.extract_lossless_audio(video_file, wav_path)
         stems = StemSeparationEngine.separate_wav(wav_path, os.path.join(project_dir, "stems"))
 
+        # Extract YouTube ID from URL or response
+        youtube_id = "yt_" + project_id[:11]
+        if "v=" in req.youtubeUrl:
+            youtube_id = req.youtubeUrl.split("v=")[1].split("&")[0]
+        elif "youtu.be/" in req.youtubeUrl:
+            youtube_id = req.youtubeUrl.split("youtu.be/")[1].split("?")[0]
+
+        # Generate collision-proof 5-character alphanumeric code
+        code = generate_unique_code(hot_store.is_code_taken)
         title = req.title or "YouTube Stream Capture"
+
         state = {
+            "id": project_id,
             "projectId": project_id,
+            "code": code,
+            "youtube_id": youtube_id,
+            "youtubeId": youtube_id,
             "orgId": org_id,
             "title": title,
-            "status": "READY",
+            "status": "ready",
             "durationSeconds": round(duration_sec, 2),
+            "duration_seconds": round(duration_sec, 2),
             "sourceType": "YOUTUBE",
             "sourceUrl": req.youtubeUrl,
+            "original_video_url": req.youtubeUrl,
+            "thumbnail_url": f"https://i.ytimg.com/vi/{youtube_id}/maxresdefault.jpg",
+            "transcript": f"Transcript for {title}. Extracted via VoiceWork Ingestion Pipeline.",
+            "captions": [],
+            "clips": [],
+            "virality_score": 78.0,
+            "virality_metrics": {
+                "pacing": 80,
+                "hookRetention": 75,
+                "audioClarity": 92
+            },
             "mediaContainer": {
                 "originalVideoUrl": f"/storage/uploads/{project_id}/source.mp4",
                 "masterAudioWavUrl": f"/storage/uploads/{project_id}/master_audio.wav",
                 "videoCodec": "h264",
                 "audioCodec": "pcm_s16le",
                 "hasVideo": has_video,
-                "thumbnailUrl": "/thumbnails/youtube_placeholder.jpg"
+                "thumbnailUrl": f"https://i.ytimg.com/vi/{youtube_id}/maxresdefault.jpg"
             },
             "mixer": {
                 "mode": "FULL_AUTHORITY",
@@ -169,8 +215,9 @@ async def ingest_youtube_stream(req: YouTubeIngestRequest):
             "surgicalHistory": []
         }
 
-        hot_store.set_project_state(project_id, state)
-        return {"status": "SUCCESS", "projectId": project_id, "project": state}
+        hot_store.set_video(state)
+        return {"status": "SUCCESS", "projectId": project_id, "code": code, "project": state}
+
 
     except Exception as e:
         logger.error(f"YouTube ingestion failed: {e}")

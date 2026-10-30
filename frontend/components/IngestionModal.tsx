@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { UploadCloud, Youtube, X, Cpu, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ProjectState } from '../lib/types';
+import { generate5CharCode } from '../lib/codeGenerator';
 import { FlyingBox } from './FlyingBox';
+
 
 interface IngestionModalProps {
   isOpen: boolean;
@@ -55,15 +57,34 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
 
       setTimeout(() => {
         const generatedId = `proj-${Date.now().toString(36)}`;
+        const generatedCode = generate5CharCode();
+        const ytId = tab === 'youtube' && youtubeUrl.includes('v=')
+          ? youtubeUrl.split('v=')[1].split('&')[0]
+          : `ingest_${generatedCode.toLowerCase()}`;
+
         const newProject: ProjectState = {
           projectId: generatedId,
+          code: generatedCode,
+          youtubeId: ytId,
+          youtube_id: ytId,
           orgId: 'org-rsm-enterprise-01',
           title: title || (tab === 'upload' && file ? file.name : 'Stream Ingestion Master'),
           status: 'READY',
           durationSeconds: 118.0,
           sourceType: tab === 'upload' ? 'UPLOAD' : 'YOUTUBE',
           sourceUrl: tab === 'upload' && file ? file.name : youtubeUrl,
+          originalVideoUrl: tab === 'youtube' ? youtubeUrl : undefined,
+          transcript: `Transcript for ${title || 'Ingested Session'}. Processed via BS-RoFormer v2.`,
+          captions: [],
+          clips: [],
+          virality_score: 82.0,
+          virality_metrics: {
+            pacing: 80,
+            hookRetention: 85,
+            audioClarity: 90
+          },
           mediaContainer: {
+
             originalVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
             masterAudioWavUrl: '/audio/demo_master.wav',
             videoCodec: 'h264',

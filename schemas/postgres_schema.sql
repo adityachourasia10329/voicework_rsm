@@ -93,3 +93,37 @@ CREATE INDEX IF NOT EXISTS idx_projects_org_status ON projects(organization_id, 
 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_media_assets_project_type ON media_assets(project_id, asset_type);
 CREATE INDEX IF NOT EXISTS idx_membership_org_user ON membership_roles(organization_id, user_id);
+
+-- ==============================================================================
+-- 7. YouTube Channel Auto-Sync Registry & 5-Character Code Registry
+-- ==============================================================================
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE TABLE IF NOT EXISTS public.videos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(5) UNIQUE NOT NULL, -- 5-character alphanumeric ID (Base36, 60M+ unique combinations)
+    youtube_id VARCHAR(32) UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    duration_seconds NUMERIC NOT NULL DEFAULT 0,
+    thumbnail_url TEXT,
+    original_video_url TEXT,
+    
+    -- Transcript & Captions
+    transcript TEXT,               -- Raw transcribed text
+    captions JSONB DEFAULT '[]',   -- Timestamped [{start: 0.0, end: 3.2, text: "..."}]
+    
+    -- Future Extension Fields (Schema Prep)
+    clips JSONB DEFAULT '[]',          -- [{clip_id, title, start_time, end_time, viral_score}]
+    virality_score NUMERIC DEFAULT 0,  -- Virality meter rating (0.0 to 100.0)
+    virality_metrics JSONB DEFAULT '{}', -- Breakdown of pacing, engagement, retention signals
+    
+    status VARCHAR(32) DEFAULT 'ready',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Full-Text & Trigram search indexes
+CREATE INDEX IF NOT EXISTS idx_videos_code ON public.videos(code);
+CREATE INDEX IF NOT EXISTS idx_videos_youtube_id ON public.videos(youtube_id);
+CREATE INDEX IF NOT EXISTS idx_videos_title_trgm ON public.videos USING gin (title gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_videos_transcript_search ON public.videos USING gin(to_tsvector('english', coalesce(title, '') || ' ' || coalesce(transcript, '')));
+

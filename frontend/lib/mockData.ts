@@ -3,12 +3,31 @@ import { ProjectState, TranscriptSegment } from './types';
 export const INITIAL_PROJECTS: ProjectState[] = [
   {
     projectId: '7f2a1884-2c63-4b08-9df8-013143527a91',
+    code: '7K9Q2',
+    youtubeId: 'demo_lex',
+    youtube_id: 'demo_lex',
     orgId: 'org-rsm-enterprise-01',
     title: 'Lex Fridman Interview #412 - Studio Denoise & Stem Isolation',
     status: 'READY',
     durationSeconds: 142.5,
     sourceType: 'YOUTUBE',
     sourceUrl: 'https://www.youtube.com/watch?v=demo_lex',
+    originalVideoUrl: 'https://www.youtube.com/watch?v=demo_lex',
+    transcript: 'The following is a conversation on neural audio demixing and next-generation speech isolation. When you consider the mathematical separation of overlapping acoustic signals, where does the real challenge lie? With BS-RoFormer, we process multi-band spectrograms directly in the frequency domain with RoPE positional embeddings.',
+    captions: [
+      { start: 0.0, end: 4.5, text: 'The following is a conversation on neural audio demixing and next-generation speech isolation.' },
+      { start: 4.8, end: 9.2, text: 'When you consider the mathematical separation of overlapping acoustic signals, where does the real challenge lie?' },
+      { start: 9.6, end: 15.0, text: 'The fundamental difficulty has always been phase cancellation and time-frequency masking in dense urban environments.' }
+    ],
+    clips: [
+      { clip_id: 'clip-lex-01', title: 'Phase Cancellation in Dense Urban Audio', start_time: 4.8, end_time: 25.0, viral_score: 94.2 }
+    ],
+    virality_score: 94.2,
+    virality_metrics: {
+      pacing: 92,
+      hookRetention: 96,
+      audioClarity: 98
+    },
     mediaContainer: {
       originalVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
       masterAudioWavUrl: '/audio/master_lex.wav',
@@ -24,6 +43,7 @@ export const INITIAL_PROJECTS: ProjectState[] = [
       expressClarityDial: 88.0,
       preset: 'VOICE_ONLY'
     },
+
     stems: [
       {
         stemId: 'stem-lex-speech',
@@ -97,12 +117,31 @@ export const INITIAL_PROJECTS: ProjectState[] = [
   },
   {
     projectId: '3e9b1192-8f12-4d22-b541-118274920c82',
+    code: 'B4T81',
+    youtubeId: 'market_doc',
+    youtube_id: 'market_doc',
     orgId: 'org-rsm-enterprise-01',
     title: 'Documentary Field Recording - Busy Market & Train Station',
     status: 'READY',
     durationSeconds: 94.0,
     sourceType: 'UPLOAD',
     sourceUrl: '/storage/uploads/market_doc.mov',
+    originalVideoUrl: '/storage/uploads/market_doc.mov',
+    transcript: 'Live from the outdoor downtown night market where crowd babble and traffic roar are peaking. Testing speech extraction under extreme low SNR acoustic conditions with DeepFilterNet3.',
+    captions: [
+      { start: 0.0, end: 5.2, text: 'Live from the outdoor downtown night market where crowd babble and traffic roar are peaking.' },
+      { start: 5.5, end: 12.0, text: 'Testing speech extraction under extreme low SNR acoustic conditions with DeepFilterNet3.' },
+      { start: 12.5, end: 20.0, text: 'Fresh roasted coffee and spices right here, twenty percent off tonight only!' }
+    ],
+    clips: [
+      { clip_id: 'clip-mkt-01', title: 'Market Crowd Speech Extraction', start_time: 0.0, end_time: 15.0, viral_score: 87.5 }
+    ],
+    virality_score: 87.5,
+    virality_metrics: {
+      pacing: 88,
+      hookRetention: 84,
+      audioClarity: 92
+    },
     mediaContainer: {
       originalVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
       masterAudioWavUrl: '/audio/market_master.wav',
@@ -118,6 +157,7 @@ export const INITIAL_PROJECTS: ProjectState[] = [
       expressClarityDial: 75.0,
       preset: 'NATURAL_AMBIENT_CLEAN'
     },
+
     stems: [
       {
         stemId: 'stem-mkt-speech',
@@ -186,3 +226,8 @@ export const MOCK_TRANSCRIPTS: Record<string, TranscriptSegment[]> = {
     { id: 'm-4', startSec: 20.5, endSec: 28.0, speaker: 'Reporter', text: 'Notice how the foreground microphone keeps the speech clear while attenuating the surround crowd chatter.' }
   ]
 };
+
+// Alias transcripts by 5-character codes
+MOCK_TRANSCRIPTS['7K9Q2'] = MOCK_TRANSCRIPTS['7f2a1884-2c63-4b08-9df8-013143527a91'];
+MOCK_TRANSCRIPTS['B4T81'] = MOCK_TRANSCRIPTS['3e9b1192-8f12-4d22-b541-118274920c82'];
+
