@@ -105,3 +105,11 @@ export interface SpectrogramFrame {
   bins: SpectrogramBin[];
   dominantLayer: string;
 }
+
+export interface TranscriptSegment {
+  id: string;
+  startSec: number;
+  endSec: number;
+  speaker?: string;
+  text: string;
+}

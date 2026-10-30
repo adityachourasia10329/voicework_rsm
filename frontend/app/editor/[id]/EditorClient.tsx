@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { Navbar } from '../../../components/Navbar';
 import { VideoPlayer } from '../../../components/VideoPlayer';
 import { SpectrogramCanvas } from '../../../components/SpectrogramCanvas';
+import { TranscriptionBox } from '../../../components/TranscriptionBox';
 import { StemMixer } from '../../../components/StemMixer';
 import { ExpressControls } from '../../../components/ExpressControls';
 import { StemEliminator } from '../../../components/StemEliminator';
 import { SurgicalModal } from '../../../components/SurgicalModal';
 import { DownloadModal } from '../../../components/DownloadModal';
 import { FlyingBox } from '../../../components/FlyingBox';
-import { INITIAL_PROJECTS } from '../../../lib/mockData';
+import { INITIAL_PROJECTS, MOCK_TRANSCRIPTS } from '../../../lib/mockData';
 import { ProjectState, StemTrack, PresetMode, EditorMode, SurgicalRevision } from '../../../lib/types';
 import {
   ArrowLeft,
@@ -42,6 +43,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [editorMode, setEditorMode] = useState<EditorMode>('STEMS_REMOVAL');
+  const [mediaPaneMode, setMediaPaneMode] = useState<'DUAL' | 'VIDEO' | 'TRANSCRIPT'>('DUAL');
 
   // Surgical modal state
   const [isSurgicalOpen, setIsSurgicalOpen] = useState<boolean>(false);
@@ -333,16 +335,71 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
         {/* Top Grid: Video Canvas & Spectrogram Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-          {/* Synced Video Player & Dedicated Download Option Underneath Preview */}
+          {/* Synced Video Player & Gemini Transcription Box */}
           <div className="lg:col-span-5 space-y-4">
-            <VideoPlayer
-              videoUrl={project.mediaContainer.originalVideoUrl}
-              currentTime={currentTime}
-              duration={project.durationSeconds}
-              isPlaying={isPlaying}
-              onTimeUpdate={(t) => setCurrentTime(t)}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-            />
+            {/* Media Pane Mode Tabs (Dual, Video Solo, Transcript Solo) */}
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center space-x-1.5 p-1 rounded-xl bg-[#12131C] border border-white/[0.08] shadow-inner text-xs font-mono">
+                <button
+                  onClick={() => setMediaPaneMode('DUAL')}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    mediaPaneMode === 'DUAL'
+                      ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white font-bold shadow-[0_0_10px_rgba(255,77,54,0.4)]'
+                      : 'text-[#9FA4B8] hover:text-white'
+                  }`}
+                >
+                  Dual View
+                </button>
+                <button
+                  onClick={() => setMediaPaneMode('VIDEO')}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    mediaPaneMode === 'VIDEO'
+                      ? 'bg-[#6B70F0] text-white font-bold shadow-[0_0_10px_rgba(107,112,240,0.4)]'
+                      : 'text-[#9FA4B8] hover:text-white'
+                  }`}
+                >
+                  Video Solo
+                </button>
+                <button
+                  onClick={() => setMediaPaneMode('TRANSCRIPT')}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    mediaPaneMode === 'TRANSCRIPT'
+                      ? 'bg-[#258BF5] text-white font-bold shadow-[0_0_10px_rgba(37,139,245,0.4)]'
+                      : 'text-[#9FA4B8] hover:text-white'
+                  }`}
+                >
+                  Transcript Solo
+                </button>
+              </div>
+
+              <span className="text-[10px] font-mono text-[#9FA4B8] hidden sm:inline">
+                {mediaPaneMode === 'DUAL' ? 'Video + Words' : mediaPaneMode === 'VIDEO' ? 'Video Viewport' : 'Gemini Words View'}
+              </span>
+            </div>
+
+            {/* Video Player */}
+            {(mediaPaneMode === 'DUAL' || mediaPaneMode === 'VIDEO') && (
+              <VideoPlayer
+                videoUrl={project.mediaContainer.originalVideoUrl}
+                currentTime={currentTime}
+                duration={project.durationSeconds}
+                isPlaying={isPlaying}
+                onTimeUpdate={(t) => setCurrentTime(t)}
+                onTogglePlay={() => setIsPlaying(!isPlaying)}
+              />
+            )}
+
+            {/* Gemini Transcription Box (same size as video preview, scrollable) */}
+            {(mediaPaneMode === 'DUAL' || mediaPaneMode === 'TRANSCRIPT') && (
+              <TranscriptionBox
+                currentTime={currentTime}
+                duration={project.durationSeconds}
+                onSeek={(t) => setCurrentTime(t)}
+                projectTitle={project.title}
+                initialSegments={MOCK_TRANSCRIPTS[project.projectId] || MOCK_TRANSCRIPTS['7f2a1884-2c63-4b08-9df8-013143527a91'] || []}
+                videoUrl={project.mediaContainer.originalVideoUrl}
+              />
+            )}
 
             {/* Download Option for the New Edited File Directly Under Video Preview */}
             <div className="glass-panel p-4 rounded-2xl border border-white/[0.08] shadow-lg flex flex-col justify-between space-y-3">
