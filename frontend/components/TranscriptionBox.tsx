@@ -33,6 +33,17 @@ interface TranscriptionBoxProps {
   videoUrl?: string | null;
 }
 
+const getEnvironmentKeys = () => {
+  const envKeys: { id: string; label: string; key: string }[] = [];
+  const k3 = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const k1 = process.env.NEXT_PUBLIC_GEMINI_API_KEY_ALT1;
+  const k2 = process.env.NEXT_PUBLIC_GEMINI_API_KEY_ALT2;
+  if (k3) envKeys.push({ id: 'key-3', label: 'Primary AI Studio Key', key: k3 });
+  if (k1) envKeys.push({ id: 'key-1', label: 'Fallback Key 1', key: k1 });
+  if (k2) envKeys.push({ id: 'key-2', label: 'Fallback Key 2', key: k2 });
+  return envKeys;
+};
+
 export const TranscriptionBox: React.FC<TranscriptionBoxProps> = ({
   currentTime,
   duration,
@@ -46,10 +57,15 @@ export const TranscriptionBox: React.FC<TranscriptionBoxProps> = ({
   const [autoScroll, setAutoScroll] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Gemini API Key State (stored safely in browser localStorage & env fallback)
-  const [apiKey, setApiKey] = useState<string>('');
+  // Gemini API Key State (loaded securely from process.env or localStorage)
+  const [apiKey, setApiKey] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('gemini_api_key') || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+    }
+    return process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+  });
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
-  const [keyInput, setKeyInput] = useState('');
+  const [keyInput, setKeyInput] = useState<string>(apiKey);
   const [showKeyText, setShowKeyText] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
@@ -57,6 +73,8 @@ export const TranscriptionBox: React.FC<TranscriptionBoxProps> = ({
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeSegmentRef = useRef<HTMLDivElement>(null);
+
+  const availableEnvKeys = useMemo(() => getEnvironmentKeys(), []);
 
   // Load API Key on mount from localStorage or process.env
   useEffect(() => {
@@ -69,6 +87,7 @@ export const TranscriptionBox: React.FC<TranscriptionBoxProps> = ({
       } else if (envKey) {
         setApiKey(envKey);
         setKeyInput(envKey);
+        localStorage.setItem('gemini_api_key', envKey);
       }
     }
   }, []);
@@ -194,12 +213,18 @@ export const TranscriptionBox: React.FC<TranscriptionBoxProps> = ({
 
     setIsTranscribing(true);
     setTranscriptionError(null);
-    setTranscriptionStatus('Connecting to Gemini 1.5 Flash multimodal endpoint...');
+    setTranscriptionStatus('Connecting to Gemini API...');
 
-    try {
-      setTranscriptionStatus('Analyzing audio waveform and generating timecoded segments...');
+    const keysToTry = [apiKey, ...availableEnvKeys.map((k) => k.key).filter((k) => k !== apiKey)];
+    let lastError: any = null;
+    let successfulData: TranscriptSegment[] | null = null;
 
-      const promptText = `You are a professional audio engineering transcription engine.
+    for (let i = 0; i < keysToTry.length; i++) {
+      const activeCandidateKey = keysToTry[i];
+      try {
+        setTranscriptionStatus(`Calling Gemini 1.5 Flash (Key ${i + 1}/${keysToTry.length})...`);
+
+        const promptText = `You are a professional audio engineering transcription engine.
 Transcribe the following video dialogue: "${projectTitle}".
 Output a strict JSON array of timestamped transcript segments spanning 0 to ${Math.floor(duration)} seconds.
 Format:
@@ -208,48 +233,58 @@ Format:
 ]
 Ensure timestamps are incremental and cover key discussion points accurately. Output ONLY valid JSON array with no markdown ticks.`;
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [{ text: promptText }]
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeCandidateKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [{ text: promptText }]
+                }
+              ],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: 'application/json'
               }
-            ],
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: 'application/json'
-            }
-          })
+            })
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || `HTTP ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Gemini API error (HTTP ${response.status})`);
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+        const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed: TranscriptSegment[] = JSON.parse(cleanJson);
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          successfulData = parsed;
+          setApiKey(activeCandidateKey);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('gemini_api_key', activeCandidateKey);
+          }
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`Key attempt ${i + 1} failed:`, err.message);
+        lastError = err;
       }
-
-      const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-      const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed: TranscriptSegment[] = JSON.parse(cleanJson);
-
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setSegments(parsed);
-        setTranscriptionStatus('Gemini transcription successfully generated!');
-        setTimeout(() => setTranscriptionStatus(null), 4000);
-      } else {
-        throw new Error('Gemini returned empty transcription data.');
-      }
-    } catch (err: any) {
-      console.error('Gemini transcription error:', err);
-      setTranscriptionError(err.message || 'Failed to generate transcription with Gemini.');
-    } finally {
-      setIsTranscribing(false);
     }
+
+    if (successfulData) {
+      setSegments(successfulData);
+      setTranscriptionStatus('Gemini transcription successfully generated!');
+      setTimeout(() => setTranscriptionStatus(null), 4000);
+    } else {
+      setTranscriptionError(lastError?.message || 'Failed to generate transcription across all provided keys.');
+    }
+
+    setIsTranscribing(false);
   };
 
   return (
@@ -511,9 +546,46 @@ Ensure timestamps are incremental and cover key discussion points accurately. Ou
             </div>
 
             <form onSubmit={handleSaveApiKey} className="space-y-4">
+              {/* Preconfigured Keys Quick Selection */}
+              {availableEnvKeys.length > 0 && (
+                <div>
+                  <label className="text-[11px] font-mono text-[#9FA4B8] block mb-1.5">
+                    Saved Project Gemini Keys (Click to activate):
+                  </label>
+                  <div className="space-y-1.5">
+                    {availableEnvKeys.map((k) => (
+                      <button
+                        key={k.id}
+                        type="button"
+                        onClick={() => {
+                          setKeyInput(k.key);
+                          setApiKey(k.key);
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('gemini_api_key', k.key);
+                          }
+                        }}
+                        className={`w-full p-2 rounded-xl border text-left font-mono text-xs flex items-center justify-between transition-all ${
+                          apiKey === k.key
+                            ? 'border-[#27A376] bg-[#27A376]/15 text-white ring-1 ring-[#27A376]/40 shadow-sm'
+                            : 'border-white/[0.08] bg-white/[0.02] text-[#9FA4B8] hover:text-white hover:bg-white/[0.05]'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className={`w-2 h-2 rounded-full ${apiKey === k.key ? 'bg-[#27A376] shadow-[0_0_6px_#27A376]' : 'bg-[#646982]'}`} />
+                          <span className="font-semibold text-white">{k.label}</span>
+                        </div>
+                        <span className="text-[10px] text-[#9FA4B8]">
+                          {k.key.substring(0, 6)}••••••••{k.key.substring(k.key.length - 4)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-xs font-mono text-[#9FA4B8] block mb-1.5">
-                  Enter Google Gemini API Key:
+                  Active or Custom Gemini API Key:
                 </label>
                 <div className="relative">
                   <input
