@@ -279,10 +279,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
     const width = canvas.width;
     const height = canvas.height;
 
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#0A0B10';
     ctx.fillRect(0, 0, width, height);
 
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
     for (let f = 0; f < height; f += 25) {
       ctx.beginPath();
@@ -310,17 +310,20 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
         let r = 0, g = 0, b = 0, alpha = 0.15;
 
         if (freqRatio < 0.2) {
-          r = 239; g = 68; b = 68;
+          // Superlist Coral #FF4D36 (Traffic / Low Rumble)
+          r = 255; g = 77; b = 54;
           alpha = trafficEnergy * 0.85;
           // Apply visual numbing if sub-bass is numbed
           if (isNumbApplied && suggestedTargetBand === 'sub-bass') {
             alpha *= Math.max(0.08, 1 - Math.abs(numbDbLevel) / 60);
           }
         } else if (freqRatio >= 0.2 && freqRatio <= 0.65) {
-          r = 16; g = 185; b = 129;
+          // Superlist Emerald #27A376 (Speech Formants)
+          r = 39; g = 163; b = 118;
           alpha = speechEnergy * 0.95;
         } else {
-          r = 56; g = 126; b = 209;
+          // Superlist Azure #258BF5 (Air / Music)
+          r = 37; g = 139; b = 245;
           alpha = musicEnergy * 0.75;
           if (isNumbApplied && suggestedTargetBand === 'air-highs') {
             alpha *= Math.max(0.08, 1 - Math.abs(numbDbLevel) / 60);
@@ -335,13 +338,13 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
       }
     }
 
-    // Draw past surgical patches
+    // Draw past surgical patches in Superlist Purple
     surgicalHistory.forEach((patch) => {
       const patchXStart = (patch.startSec / duration) * width;
       const patchWidth = ((patch.endSec - patch.startSec) / duration) * width;
-      ctx.fillStyle = 'rgba(56, 126, 209, 0.25)';
+      ctx.fillStyle = 'rgba(107, 112, 240, 0.25)';
       ctx.fillRect(patchXStart, 0, patchWidth, height);
-      ctx.strokeStyle = '#387ed1';
+      ctx.strokeStyle = '#6B70F0';
       ctx.lineWidth = 1.5;
       ctx.strokeRect(patchXStart, 0, patchWidth, height);
     });
@@ -358,10 +361,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
     const height = canvas.height;
     const midY = height / 2;
 
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#0A0B10';
     ctx.fillRect(0, 0, width, height);
 
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, midY);
@@ -372,7 +375,7 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
     const isThisBandNumbed = isNumbApplied && suggestedTargetBand === band.id;
     const numbFactor = isThisBandNumbed ? Math.max(0.12, 1 - Math.abs(numbDbLevel) / 60) : 1.0;
 
-    ctx.strokeStyle = isThisBandNumbed ? '#94a3b8' : band.color;
+    ctx.strokeStyle = isThisBandNumbed ? '#646982' : band.color;
     ctx.lineWidth = isThisBandNumbed ? 1.2 : 1.6;
     ctx.beginPath();
 
@@ -425,13 +428,13 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
   };
 
   return (
-    <div className="bg-white rounded border border-zerodha-border p-4 shadow-sm space-y-4">
+    <div className="glass-panel rounded-2xl p-5 sm:p-6 border border-white/[0.08] shadow-2xl space-y-5 backdrop-blur-xl text-white">
       {/* Top Header & Frequency Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-zerodha-heading">Multi-Band Spectral &amp; Wave Analysis</span>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-50 text-zerodha-blue border border-blue-200">
+            <span className="text-xs font-heading font-bold text-white tracking-wide">Multi-Band Spectral &amp; Wave Analysis</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FF4D36]/15 text-[#FF7A59] border border-[#FF4D36]/30 font-semibold">
               5 Frequency Bands Identified (20 Hz &rarr; 20 kHz)
             </span>
             <FlyingBox
@@ -440,18 +443,20 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
               recommendation="Use Split View to view both the visual spectrogram heatmap and the audio waves together."
             />
           </div>
-          <p className="text-[11px] text-zerodha-muted font-mono mt-0.5">
+          <p className="text-[11px] text-[#9FA4B8] font-mono mt-0.5">
             Click &amp; drag over timeline or wave tracks to isolate intervals for surgical re-processing.
           </p>
         </div>
 
         {/* View Mode Toggle with Flying Boxes */}
         <div className="flex items-center space-x-2">
-          <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
+          <div className="flex rounded-xl border border-white/[0.08] bg-[#12131C] p-1 text-xs font-heading font-medium shadow-inner">
             <button
               onClick={() => setViewMode('SPLIT')}
-              className={`px-3 py-1 font-medium flex items-center space-x-1.5 transition-colors ${
-                viewMode === 'SPLIT' ? 'bg-zerodha-blue text-white' : 'bg-white text-zerodha-muted hover:bg-gray-50'
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-all ${
+                viewMode === 'SPLIT'
+                  ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white font-bold shadow-[0_0_12px_rgba(255,77,54,0.4)]'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <SplitSquareVertical className="w-3.5 h-3.5" />
@@ -460,8 +465,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
 
             <button
               onClick={() => setViewMode('FREQUENCY_WAVES')}
-              className={`px-3 py-1 font-medium border-l border-zerodha-border flex items-center space-x-1.5 transition-colors ${
-                viewMode === 'FREQUENCY_WAVES' ? 'bg-zerodha-blue text-white' : 'bg-white text-zerodha-muted hover:bg-gray-50'
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-all ${
+                viewMode === 'FREQUENCY_WAVES'
+                  ? 'bg-[#6B70F0] text-white font-bold shadow-[0_0_12px_rgba(107,112,240,0.4)]'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <Radio className="w-3.5 h-3.5" />
@@ -470,8 +477,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
 
             <button
               onClick={() => setViewMode('SPECTROGRAM')}
-              className={`px-3 py-1 font-medium border-l border-zerodha-border flex items-center space-x-1.5 transition-colors ${
-                viewMode === 'SPECTROGRAM' ? 'bg-zerodha-blue text-white' : 'bg-white text-zerodha-muted hover:bg-gray-50'
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-all ${
+                viewMode === 'SPECTROGRAM'
+                  ? 'bg-[#258BF5] text-white font-bold shadow-[0_0_12px_rgba(37,139,245,0.4)]'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -485,10 +494,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
         </div>
       </div>
 
-      {/* Frequency Bands Filter Selector (Note: Scope box removed per Requirement 4) */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-gray-100">
+      {/* Frequency Bands Filter Selector */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/[0.08]">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-mono font-medium text-gray-500 mr-1 flex items-center space-x-1">
+          <span className="text-[11px] font-mono font-medium text-[#9FA4B8] mr-1 flex items-center space-x-1">
             <span>Identified Waves:</span>
             <FlyingBox
               title="Frequency Bands"
@@ -498,10 +507,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
 
           <button
             onClick={() => setSelectedBandId('ALL')}
-            className={`px-2.5 py-1 text-xs rounded font-mono transition-colors ${
+            className={`px-3 py-1 text-xs rounded-xl font-mono transition-all ${
               selectedBandId === 'ALL'
-                ? 'bg-zerodha-blue text-white font-semibold shadow-xs'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white font-bold shadow-[0_0_12px_rgba(255,77,54,0.4)]'
+                : 'bg-white/[0.04] text-[#9FA4B8] hover:text-white hover:bg-white/[0.08] border border-white/[0.08]'
             }`}
           >
             All Bands (Stacked)
@@ -511,22 +520,22 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
             <button
               key={band.id}
               onClick={() => setSelectedBandId(band.id)}
-              className={`px-2.5 py-1 text-xs rounded font-mono flex items-center space-x-1.5 transition-all ${
+              className={`px-2.5 py-1 text-xs rounded-xl font-mono flex items-center space-x-1.5 transition-all border ${
                 selectedBandId === band.id
-                  ? 'bg-gray-900 text-white font-semibold shadow-xs ring-1 ring-offset-1'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-white/[0.12] text-white font-bold border-white/[0.25] shadow-sm'
+                  : 'bg-white/[0.03] text-[#9FA4B8] hover:text-white hover:bg-white/[0.06] border-white/[0.06]'
               }`}
             >
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: band.color }} />
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: band.color, boxShadow: `0 0 6px ${band.color}` }} />
               <span>{band.rangeLabel}</span>
-              <span className="text-[10px] text-gray-400">({band.identifiedPeakHz}Hz)</span>
+              <span className="text-[10px] text-[#646982]">({band.identifiedPeakHz}Hz)</span>
             </button>
           ))}
         </div>
 
         {/* Headphones Connected Audition Guide */}
-        <div className="flex items-center space-x-2 text-[11px] font-mono text-gray-500">
-          <Headphones className="w-3.5 h-3.5 text-zerodha-blue" />
+        <div className="flex items-center space-x-2 text-[11px] font-mono text-[#9FA4B8]">
+          <Headphones className="w-3.5 h-3.5 text-[#27A376]" />
           <span>Connect headphones to audition isolated bands below</span>
         </div>
       </div>
@@ -536,8 +545,8 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
       {/* ============================================================== */}
       {(viewMode === 'SPECTROGRAM' || viewMode === 'SPLIT') && (
         <div>
-          <div className="flex items-center justify-between text-xs text-zerodha-muted mb-1 px-1">
-            <span className="font-mono text-[11px] flex items-center space-x-1">
+          <div className="flex items-center justify-between text-xs text-[#9FA4B8] mb-1.5 px-1">
+            <span className="font-mono text-[11px] flex items-center space-x-1 text-white">
               <span>Mel-Spectrogram Heatmap (20 Hz &rarr; 20,000 Hz)</span>
               <FlyingBox
                 title="Mel-Spectrogram Heatmap"
@@ -545,17 +554,17 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
               />
             </span>
             <div className="flex items-center space-x-3 text-[10px] font-mono">
-              <span className="flex items-center space-x-1">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-                <span>Low Rumble</span>
+              <span className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FF4D36] shadow-[0_0_6px_#FF4D36]" />
+                <span className="text-[#FF7A59]">Low Rumble</span>
               </span>
-              <span className="flex items-center space-x-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>Speech</span>
+              <span className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#27A376] shadow-[0_0_6px_#27A376]" />
+                <span className="text-[#33C287]">Speech</span>
               </span>
-              <span className="flex items-center space-x-1">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                <span>Air/Music</span>
+              <span className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#258BF5] shadow-[0_0_6px_#258BF5]" />
+                <span className="text-[#429CFF]">Air/Music</span>
               </span>
             </div>
           </div>
@@ -565,7 +574,7 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            className="relative h-36 w-full rounded overflow-hidden cursor-crosshair border border-gray-200 select-none"
+            className="relative h-36 w-full rounded-xl overflow-hidden cursor-crosshair border border-white/[0.12] bg-[#0A0B10] select-none shadow-inner"
           >
             <canvas
               ref={specCanvasRef}
@@ -576,33 +585,33 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
 
             {/* Playhead Scrubber */}
             <div
-              className="absolute top-0 bottom-0 w-0.5 bg-white shadow-sm pointer-events-none z-20"
+              className="absolute top-0 bottom-0 w-0.5 bg-[#FF4D36] shadow-[0_0_10px_#FF4D36] pointer-events-none z-20"
               style={{ left: `${(currentTime / duration) * 100}%` }}
             >
-              <div className="w-2.5 h-2.5 -ml-1 bg-white rounded-full border border-gray-400" />
+              <div className="w-2.5 h-2.5 -ml-1 bg-[#FF4D36] rounded-full border border-white shadow-md" />
             </div>
 
             {/* Time Bracket Highlight Selection */}
             {hasActiveBracket && (
               <div
-                className="absolute top-0 bottom-0 bg-blue-500/20 border-x-2 border-zerodha-blue z-10 flex flex-col justify-between"
+                className="absolute top-0 bottom-0 bg-[#258BF5]/20 border-x-2 border-[#258BF5] z-10 flex flex-col justify-between"
                 style={{
                   left: `${(selMin! / duration) * 100}%`,
                   width: `${((selMax! - selMin!) / duration) * 100}%`
                 }}
               >
-                <div className="bg-zerodha-blue px-2 py-0.5 text-[10px] font-mono text-white font-semibold w-fit rounded-br shadow-sm flex items-center space-x-1">
+                <div className="bg-[#258BF5] px-2 py-0.5 text-[10px] font-mono text-white font-semibold w-fit rounded-br shadow-sm flex items-center space-x-1">
                   <Crosshair className="w-3 h-3" />
                   <span>{formatSec(selMin!)} – {formatSec(selMax!)} ({(selMax! - selMin!).toFixed(1)}s)</span>
                 </div>
 
-                <div className="p-1 flex justify-center">
+                <div className="p-1.5 flex justify-center">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onOpenSurgicalModal(selMin!, selMax!);
                     }}
-                    className="px-2.5 py-1 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-[11px] font-medium shadow-sm flex items-center space-x-1 transition-all"
+                    className="btn-coral px-3 py-1 rounded-xl text-white text-xs font-semibold shadow-[0_0_15px_rgba(255,77,54,0.4)] flex items-center space-x-1.5 transition-all"
                   >
                     <Sparkles className="w-3 h-3" />
                     <span>Re-evaluate Interval</span>
@@ -619,15 +628,15 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
       {/* ============================================================== */}
       {(viewMode === 'FREQUENCY_WAVES' || viewMode === 'SPLIT') && (
         <div className="space-y-3 pt-1">
-          <div className="flex items-center justify-between text-xs text-zerodha-muted px-1">
-            <span className="font-mono text-[11px] font-semibold text-zerodha-heading flex items-center space-x-1.5">
+          <div className="flex items-center justify-between text-xs text-[#9FA4B8] px-1">
+            <span className="font-mono text-[11px] font-semibold text-white flex items-center space-x-1.5">
               <span>Decomposed Waveforms Across Identified Frequencies</span>
               <FlyingBox
                 title="Frequency Wave Lanes"
                 content="Each lane displays the physical wave oscillations of that frequency band. Use the audition buttons (Play/Pause, Rewind, Fast Forward, Speed) under each wave to listen directly through your audio device."
               />
             </span>
-            <span className="text-[10px] font-mono text-gray-400">
+            <span className="text-[10px] font-mono text-[#646982]">
               Scrub or click anywhere along the waves to seek
             </span>
           </div>
@@ -659,16 +668,16 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
       )}
 
       {/* ============================================================== */}
-      {/* 3. AI SUGGESTED NOISE FREQUENCY NUMBING HUB (Requirement 2)    */}
+      {/* 3. AI SUGGESTED NOISE FREQUENCY NUMBING HUB                    */}
       {/* ============================================================== */}
-      <div className="mt-4 p-3.5 bg-gray-50 rounded border border-zerodha-border">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-gray-200">
+      <div className="mt-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.08] relative overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2.5 border-b border-white/[0.06]">
           <div className="flex items-center space-x-2">
-            <ShieldAlert className="w-4 h-4 text-zerodha-orange" />
-            <h4 className="text-xs font-semibold text-zerodha-heading">
+            <ShieldAlert className="w-4 h-4 text-[#FF4D36]" />
+            <h4 className="text-xs font-heading font-bold text-white">
               AI Suggested Noise Frequency Suppression &amp; Numbing
             </h4>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FF4D36]/15 text-[#FF7A59] border border-[#FF4D36]/30 font-semibold">
               Noise Detected
             </span>
             <FlyingBox
@@ -679,14 +688,14 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 text-xs font-mono">
-            <span className="text-gray-500">Status:</span>
+            <span className="text-[#9FA4B8]">Status:</span>
             {isNumbApplied ? (
-              <span className="text-zerodha-blue font-semibold flex items-center space-x-1">
+              <span className="text-[#27A376] font-semibold flex items-center space-x-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Numbed at {numbDbLevel} dB</span>
               </span>
             ) : (
-              <span className="text-gray-400">Flat / Bypass</span>
+              <span className="text-[#646982]">Flat / Bypass</span>
             )}
           </div>
         </div>
@@ -694,17 +703,17 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           {/* Target Noise Band Selector */}
           <div className="md:col-span-5 space-y-1.5">
-            <label className="text-[11px] font-mono text-gray-600 block">
+            <label className="text-[11px] font-mono text-[#9FA4B8] block">
               Detected Acoustic Interference Target:
             </label>
             <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
                 onClick={() => setSuggestedTargetBand('sub-bass')}
-                className={`px-2.5 py-1 text-xs rounded font-mono border transition-all ${
+                className={`px-2.5 py-1 text-xs rounded-xl font-mono border transition-all ${
                   suggestedTargetBand === 'sub-bass'
-                    ? 'border-red-500 bg-red-50 text-red-700 font-semibold shadow-xs'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100'
+                    ? 'border-[#FF4D36] bg-[#FF4D36]/20 text-[#FF7A59] font-bold shadow-[0_0_10px_rgba(255,77,54,0.25)]'
+                    : 'border-white/[0.08] bg-white/[0.03] text-[#9FA4B8] hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
                 Sub-Bass Rumble (20-140Hz)
@@ -713,10 +722,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
               <button
                 type="button"
                 onClick={() => setSuggestedTargetBand('air-highs')}
-                className={`px-2.5 py-1 text-xs rounded font-mono border transition-all ${
+                className={`px-2.5 py-1 text-xs rounded-xl font-mono border transition-all ${
                   suggestedTargetBand === 'air-highs'
-                    ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold shadow-xs'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100'
+                    ? 'border-[#6B70F0] bg-[#6B70F0]/20 text-[#8E93FF] font-bold shadow-[0_0_10px_rgba(107,112,240,0.25)]'
+                    : 'border-white/[0.08] bg-white/[0.03] text-[#9FA4B8] hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
                 HVAC / Tape Hiss (8.5-16kHz)
@@ -725,10 +734,10 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
               <button
                 type="button"
                 onClick={() => setSuggestedTargetBand('sibilance')}
-                className={`px-2.5 py-1 text-xs rounded font-mono border transition-all ${
+                className={`px-2.5 py-1 text-xs rounded-xl font-mono border transition-all ${
                   suggestedTargetBand === 'sibilance'
-                    ? 'border-amber-500 bg-amber-50 text-amber-700 font-semibold shadow-xs'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100'
+                    ? 'border-[#FF5DB1] bg-[#FF5DB1]/20 text-[#FF75C0] font-bold shadow-[0_0_10px_rgba(255,93,177,0.25)]'
+                    : 'border-white/[0.08] bg-white/[0.03] text-[#9FA4B8] hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
                 Sibilance Harshness (5-7.5kHz)
@@ -739,8 +748,8 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
           {/* Numb Attenuation Slider */}
           <div className="md:col-span-4 space-y-1">
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-gray-600">Suppression Factor:</span>
-              <span className="font-bold text-zerodha-heading">
+              <span className="text-[#9FA4B8]">Suppression Factor:</span>
+              <span className="font-bold text-white">
                 {isNumbApplied ? `${numbDbLevel} dB` : '0 dB (Off)'}
               </span>
             </div>
@@ -754,9 +763,9 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
                 setNumbDbLevel(parseInt(e.target.value));
                 setIsNumbApplied(true);
               }}
-              className="w-full accent-zerodha-blue cursor-pointer"
+              className="w-full accent-[#FF4D36] cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] font-mono text-gray-400">
+            <div className="flex justify-between text-[10px] font-mono text-[#646982]">
               <span>-60 dB (Total Mute)</span>
               <span>-18 dB (Balanced)</span>
               <span>0 dB (Flat)</span>
@@ -771,7 +780,7 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
                 setNumbDbLevel(-18);
                 setIsNumbApplied(true);
               }}
-              className="px-2 py-1 rounded bg-white hover:bg-gray-100 border border-zerodha-border text-[11px] font-mono text-gray-700 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] font-mono text-[#E0E2EC] transition-colors"
             >
               Numb -18dB
             </button>
@@ -781,17 +790,17 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
                 setNumbDbLevel(-60);
                 setIsNumbApplied(true);
               }}
-              className="px-2 py-1 rounded bg-white hover:bg-gray-100 border border-zerodha-border text-[11px] font-mono text-red-600 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-[#FF4D36]/15 hover:bg-[#FF4D36]/25 border border-[#FF4D36]/30 text-[11px] font-mono text-[#FF7A59] transition-colors"
             >
               Notch Mute
             </button>
             <button
               type="button"
               onClick={() => setIsNumbApplied(!isNumbApplied)}
-              className={`px-2 py-1 rounded text-[11px] font-mono transition-colors ${
+              className={`px-3 py-1 rounded-lg text-[11px] font-mono transition-all ${
                 isNumbApplied
-                  ? 'bg-zerodha-blue text-white'
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ? 'btn-purple font-semibold text-white shadow-[0_0_12px_rgba(107,112,240,0.4)]'
+                  : 'bg-white/[0.06] text-[#9FA4B8] hover:text-white hover:bg-white/[0.1]'
               }`}
             >
               {isNumbApplied ? 'Numb Active' : 'Enable Numb'}
@@ -801,8 +810,8 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
       </div>
 
       {/* Sound Event Detection (SED) Timeline Strip */}
-      <div className="relative h-7 w-full bg-gray-50 rounded overflow-hidden border border-zerodha-border flex items-center px-1">
-        <span className="text-[10px] font-mono text-gray-500 uppercase px-1.5 font-bold z-10 flex-shrink-0 flex items-center space-x-1">
+      <div className="relative h-8 w-full bg-[#0A0B10] rounded-xl overflow-hidden border border-white/[0.08] flex items-center px-2">
+        <span className="text-[10px] font-mono text-[#9FA4B8] uppercase px-1 font-bold z-10 flex-shrink-0 flex items-center space-x-1">
           <span>SED Events</span>
           <FlyingBox
             title="Sound Event Detection"
@@ -813,15 +822,15 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
           {soundEvents.map((evt, idx) => {
             const leftPct = (evt.startSec / duration) * 100;
             const widthPct = ((evt.endSec - evt.startSec) / duration) * 100;
-            let badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-            if (evt.label.includes('TRAFFIC')) badgeClass = 'bg-red-100 text-red-800 border-red-200';
-            if (evt.label.includes('CROWD')) badgeClass = 'bg-blue-100 text-blue-800 border-blue-200';
-            if (evt.label.includes('MUSIC')) badgeClass = 'bg-purple-100 text-purple-800 border-purple-200';
+            let badgeClass = 'bg-[#27A376]/20 text-[#33C287] border-[#27A376]/30';
+            if (evt.label.includes('TRAFFIC')) badgeClass = 'bg-[#FF4D36]/20 text-[#FF7A59] border-[#FF4D36]/30';
+            if (evt.label.includes('CROWD')) badgeClass = 'bg-[#258BF5]/20 text-[#429CFF] border-[#258BF5]/30';
+            if (evt.label.includes('MUSIC')) badgeClass = 'bg-[#6B70F0]/20 text-[#8E93FF] border-[#6B70F0]/30';
 
             return (
               <div
                 key={idx}
-                className={`absolute top-1 bottom-1 rounded border text-[9px] font-mono px-1 flex items-center overflow-hidden whitespace-nowrap ${badgeClass}`}
+                className={`absolute top-1 bottom-1 rounded border text-[9px] font-mono px-1.5 flex items-center overflow-hidden whitespace-nowrap ${badgeClass}`}
                 style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
                 title={`${evt.label} (${evt.startSec}s - ${evt.endSec}s)`}
               >
@@ -892,23 +901,25 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
   const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
   return (
-    <div className={`bg-gray-50/80 rounded border p-2.5 transition-all ${
-      isNumbed ? 'border-amber-300 bg-amber-50/20' : 'border-gray-200 hover:border-gray-300'
+    <div className={`rounded-xl border p-3 transition-all ${
+      isNumbed
+        ? 'border-[#FF4D36]/40 bg-[#FF4D36]/[0.05] shadow-[0_0_15px_rgba(255,77,54,0.08)]'
+        : 'border-white/[0.08] bg-[#12131C] hover:border-white/[0.15]'
     }`}>
       {/* Wave Header Info */}
-      <div className="flex flex-wrap items-center justify-between text-xs font-mono mb-1.5 gap-2">
+      <div className="flex flex-wrap items-center justify-between text-xs font-mono mb-2 gap-2">
         <div className="flex items-center space-x-2">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: band.color }} />
-          <span className="font-semibold text-zerodha-heading text-[11px]">{band.name}</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded bg-white text-gray-600 border border-gray-200">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: band.color, boxShadow: `0 0 6px ${band.color}` }} />
+          <span className="font-heading font-semibold text-white text-xs">{band.name}</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.05] text-[#E0E2EC] border border-white/[0.08]">
             {band.rangeLabel}
           </span>
-          <span className="text-[10px] text-gray-500 hidden sm:inline">
-            (Peak: <strong className="text-gray-800">{band.identifiedPeakHz} Hz</strong>)
+          <span className="text-[10px] text-[#9FA4B8] hidden sm:inline">
+            (Peak: <strong className="text-white font-mono">{band.identifiedPeakHz} Hz</strong>)
           </span>
 
           {isNumbed && (
-            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-300">
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#FF4D36]/20 text-[#FF7A59] border border-[#FF4D36]/30">
               NUMBED {numbDbLevel} dB
             </span>
           )}
@@ -921,12 +932,12 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
         </div>
 
         <div className="flex items-center space-x-3 text-[10px]">
-          <span className="text-gray-500">
-            Energy: <strong className="text-gray-800 font-mono">{currentEnergyDb} dBFS</strong>
+          <span className="text-[#9FA4B8]">
+            Energy: <strong className="text-[#27A376] font-mono">{currentEnergyDb} dBFS</strong>
           </span>
           <button
             onClick={() => onSelectBand(isSelected ? 'ALL' : band.id)}
-            className="text-zerodha-blue hover:underline"
+            className="text-[#6B70F0] hover:text-[#8E93FF] font-semibold transition-colors"
           >
             {isSelected ? 'Show All Bands' : 'Solo Wave'}
           </button>
@@ -936,7 +947,7 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
       {/* Waveform Canvas Viewport */}
       <div
         onClick={handleTrackClick}
-        className="relative h-12 w-full rounded overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 select-none group"
+        className="relative h-12 w-full rounded-lg overflow-hidden cursor-pointer bg-[#0A0B10] border border-white/[0.08] select-none group"
       >
         <canvas
           ref={canvasRef}
@@ -947,13 +958,13 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
 
         {/* Playhead Marker */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-sm pointer-events-none z-10"
+          className="absolute top-0 bottom-0 w-0.5 bg-[#FF4D36] shadow-[0_0_8px_#FF4D36] pointer-events-none z-10"
           style={{ left: `${(currentTime / duration) * 100}%` }}
         >
-          <div className="w-2 h-2 -ml-0.75 bg-white rounded-full border border-gray-300" />
+          <div className="w-2 h-2 -ml-0.75 bg-[#FF4D36] rounded-full border border-white" />
         </div>
 
-        <div className="absolute right-2 bottom-1 text-[9px] font-mono text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute right-2 bottom-1 text-[9px] font-mono text-[#646982] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           {band.sourceType}
         </div>
       </div>
@@ -961,15 +972,15 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
       {/* ------------------------------------------------------------- */}
       {/* Frequency Audition Bar (Play/Pause/Backward/Forward/Speed)     */}
       {/* ------------------------------------------------------------- */}
-      <div className="mt-2 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs font-mono bg-white p-1.5 rounded border border-gray-100">
+      <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs font-mono bg-white/[0.02] p-2 rounded-xl border border-white/[0.04]">
         <div className="flex items-center space-x-2">
           {/* Play/Pause Button to Audition Frequency */}
           <button
             onClick={onToggleAudition}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center space-x-1.5 transition-all shadow-xs ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all ${
               isAuditioning
-                ? 'bg-zerodha-green text-white ring-2 ring-emerald-200'
-                : 'bg-zerodha-blue hover:bg-zerodha-blue-hover text-white'
+                ? 'bg-[#27A376] text-white shadow-[0_0_14px_rgba(39,163,118,0.5)] font-bold'
+                : 'btn-purple'
             }`}
             title="Listen to this frequency range directly through connected audio device"
           >
@@ -989,7 +1000,7 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
           {/* Rewind -5s */}
           <button
             onClick={() => onSeek(Math.max(0, currentTime - 5))}
-            className="p-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
+            className="p-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
             title="Rewind 5 seconds"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -998,7 +1009,7 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
           {/* Fast Forward +5s */}
           <button
             onClick={() => onSeek(Math.min(duration, currentTime + 5))}
-            className="p-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
+            className="p-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
             title="Forward 5 seconds"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -1023,7 +1034,7 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
               className={`px-2 py-0.5 rounded-md transition-all ${
                 playbackSpeed === spd
                   ? 'bg-[#FF4D36] text-white font-bold shadow-[0_0_10px_rgba(255,77,54,0.4)]'
-                  : 'bg-white/[0.05] text-[#9FA4B8] hover:text-white hover:bg-white/[0.08]'
+                  : 'bg-white/[0.04] text-[#9FA4B8] hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               {spd}x

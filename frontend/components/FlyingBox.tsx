@@ -51,7 +51,7 @@ export const FlyingBox: React.FC<FlyingBoxProps> = ({
         <button
           type="button"
           aria-label={title}
-          className="text-gray-400 hover:text-zerodha-blue transition-colors focus:outline-none"
+          className="text-[#9FA4B8] hover:text-[#6B70F0] transition-colors focus:outline-none"
         >
           {triggerIcon === 'help' ? (
             <HelpCircle className="w-3.5 h-3.5" />
