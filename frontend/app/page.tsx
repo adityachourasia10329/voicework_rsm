@@ -27,7 +27,8 @@ import {
   X,
   Clock,
   Play,
-  Filter
+  Filter,
+  LayoutDashboard
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -39,7 +40,6 @@ export default function HomePage() {
   // Global Top-Level Search & Filter State (above dashboard & gallery)
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [activeStemFilter, setActiveStemFilter] = useState<'ALL' | 'SPEECH' | 'TRAFFIC' | 'CROWD' | 'MUSIC'>('ALL');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Sync tab with URL search parameter if present
@@ -114,12 +114,6 @@ export default function HomePage() {
     });
   }, [projects, globalSearchQuery, activeStemFilter]);
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
   return (
     <div className="min-h-screen text-[#F3F4F8] font-sans">
       <Navbar
@@ -127,20 +121,35 @@ export default function HomePage() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         projectCount={projects.length}
+        searchQuery={globalSearchQuery}
+        onSearchChange={setGlobalSearchQuery}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
         
         {/* ============================================================ */}
-        {/* GLOBAL COMMAND & SEARCH BAR (Above Dashboard & Gallery Level)*/}
+        {/* 1. GLOBAL SEARCH BAR (ABOVE THE GALLERY & DASHBOARD LEVEL)   */}
         {/* ============================================================ */}
-        <section className="mb-8 relative z-30" aria-label="Global Workspace Search">
-          <div className="glass-panel rounded-2xl p-2 sm:p-2.5 border border-white/[0.08] shadow-2xl transition-all focus-within:border-[#FF4D36]/50 focus-within:shadow-[0_0_30px_rgba(255,77,54,0.18)]">
+        <section className="mb-6 relative z-30" aria-label="Global Workspace Search">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <div className="flex items-center space-x-2 text-xs font-mono text-[#9FA4B8]">
+              <div className="w-2 h-2 rounded-full bg-[#FF4D36] animate-pulse shadow-[0_0_8px_#FF4D36]" />
+              <span className="font-semibold uppercase tracking-wider text-white">Workspace Search</span>
+              <span className="text-[#646982]">&bull;</span>
+              <span className="text-[11px] text-[#9FA4B8] hidden sm:inline">Search across all stems, sessions &amp; models</span>
+            </div>
+            <div className="flex items-center space-x-1.5 text-[10px] font-mono text-[#646982]">
+              <span className="hidden sm:inline">Quick Jump:</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-[#9FA4B8] border border-white/[0.1]">Ctrl+K</kbd>
+            </div>
+          </div>
+
+          <div className="glass-panel rounded-2xl p-2.5 sm:p-3 border border-white/[0.08] shadow-2xl transition-all focus-within:border-[#FF4D36]/60 focus-within:shadow-[0_0_30px_rgba(255,77,54,0.2)]">
             <div className="flex flex-col md:flex-row md:items-center gap-2.5">
               
               {/* Search Input Container */}
               <div className="relative flex-1 flex items-center">
-                <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-[#FF4D36] ml-1 flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#FF4D36]/15 border border-[#FF4D36]/30 flex items-center justify-center text-[#FF4D36] ml-1 flex-shrink-0 shadow-[0_0_12px_rgba(255,77,54,0.3)]">
                   <Search className="w-4 h-4" />
                 </div>
                 
@@ -150,8 +159,7 @@ export default function HomePage() {
                   placeholder="Search projects, stems, noise profiles, models (e.g. Lex Fridman, Traffic, BS-RoFormer, 44.1kHz)..."
                   value={globalSearchQuery}
                   onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  className="w-full bg-transparent pl-3 pr-20 py-2.5 text-xs sm:text-sm text-white placeholder-[#646982] focus:outline-none font-sans"
+                  className="w-full bg-transparent pl-3.5 pr-20 py-2.5 text-xs sm:text-sm text-white placeholder-[#646982] focus:outline-none font-sans"
                 />
 
                 {/* Clear or Shortcut Pill */}
@@ -159,13 +167,13 @@ export default function HomePage() {
                   {globalSearchQuery ? (
                     <button
                       onClick={() => setGlobalSearchQuery('')}
-                      className="p-1 rounded-md text-[#9FA4B8] hover:text-white hover:bg-white/[0.08] transition-colors"
+                      className="p-1.5 rounded-lg text-[#9FA4B8] hover:text-white hover:bg-white/[0.08] transition-colors"
                       title="Clear search"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   ) : (
-                    <kbd className="hidden sm:inline-flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.04] text-[#9FA4B8] border border-white/[0.08]">
+                    <kbd className="hidden sm:inline-flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] text-[#9FA4B8] border border-white/[0.1]">
                       <span>Ctrl</span>
                       <span>+</span>
                       <span>K</span>
@@ -175,14 +183,14 @@ export default function HomePage() {
               </div>
 
               {/* Quick Stem Filter Chips (Superlist Palette) */}
-              <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0 px-1 border-t md:border-t-0 md:border-l border-white/[0.06] md:pl-3">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#646982] hidden lg:inline mr-1">
-                  Filter:
+              <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0 px-1 border-t md:border-t-0 md:border-l border-white/[0.08] md:pl-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#646982] hidden lg:inline mr-1 font-semibold">
+                  Stem:
                 </span>
                 
                 <button
                   onClick={() => setActiveStemFilter('ALL')}
-                  className={`px-3 py-1 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 ${
                     activeStemFilter === 'ALL'
                       ? 'bg-white text-[#0D0E15] font-bold shadow-sm'
                       : 'bg-white/[0.04] text-[#9FA4B8] hover:text-white hover:bg-white/[0.08]'
@@ -193,7 +201,7 @@ export default function HomePage() {
 
                 <button
                   onClick={() => setActiveStemFilter('SPEECH')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1 ${
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
                     activeStemFilter === 'SPEECH'
                       ? 'bg-[#27A376] text-white font-bold shadow-[0_0_12px_rgba(39,163,118,0.4)]'
                       : 'bg-[#27A376]/10 text-[#33C287] hover:bg-[#27A376]/20'
@@ -205,7 +213,7 @@ export default function HomePage() {
 
                 <button
                   onClick={() => setActiveStemFilter('TRAFFIC')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1 ${
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
                     activeStemFilter === 'TRAFFIC'
                       ? 'bg-[#FF4D36] text-white font-bold shadow-[0_0_12px_rgba(255,77,54,0.4)]'
                       : 'bg-[#FF4D36]/10 text-[#FF7A59] hover:bg-[#FF4D36]/20'
@@ -217,7 +225,7 @@ export default function HomePage() {
 
                 <button
                   onClick={() => setActiveStemFilter('CROWD')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1 ${
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
                     activeStemFilter === 'CROWD'
                       ? 'bg-[#258BF5] text-white font-bold shadow-[0_0_12px_rgba(37,139,245,0.4)]'
                       : 'bg-[#258BF5]/10 text-[#429CFF] hover:bg-[#258BF5]/20'
@@ -229,7 +237,7 @@ export default function HomePage() {
 
                 <button
                   onClick={() => setActiveStemFilter('MUSIC')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1 ${
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
                     activeStemFilter === 'MUSIC'
                       ? 'bg-[#6B70F0] text-white font-bold shadow-[0_0_12px_rgba(107,112,240,0.4)]'
                       : 'bg-[#6B70F0]/10 text-[#8E93FF] hover:bg-[#6B70F0]/20'
@@ -242,13 +250,13 @@ export default function HomePage() {
 
             </div>
 
-            {/* Live Instant Search Matches Dropdown (when query or active filter is active on dashboard) */}
+            {/* Live Instant Search Matches Dropdown Banner */}
             {(globalSearchQuery.trim().length > 0 || activeStemFilter !== 'ALL') && (
               <div className="mt-2.5 pt-2.5 border-t border-white/[0.08] px-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
                 <div className="flex items-center space-x-2 text-[#9FA4B8]">
-                  <span>Found</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#FF4D36]/15 text-[#FF7A59] font-bold">
-                    {filteredProjects.length} matching workspace{filteredProjects.length === 1 ? '' : 's'}
+                  <span>Query result:</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#FF4D36]/15 text-[#FF7A59] font-bold border border-[#FF4D36]/30">
+                    {filteredProjects.length} matching session{filteredProjects.length === 1 ? '' : 's'}
                   </span>
                   {globalSearchQuery && (
                     <span>for &ldquo;<span className="text-white font-semibold">{globalSearchQuery}</span>&rdquo;</span>
@@ -278,6 +286,47 @@ export default function HomePage() {
             )}
           </div>
         </section>
+
+        {/* ============================================================ */}
+        {/* 2. GALLERY AND DASHBOARD LEVEL SWITCHER ROW                  */}
+        {/* ============================================================ */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-white/[0.08]">
+          <div className="flex items-center space-x-2 bg-[#12131C] p-1.5 rounded-2xl border border-white/[0.08] shadow-inner">
+            <button
+              onClick={() => handleTabChange('dashboard')}
+              className={`px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
+                activeTab === 'dashboard'
+                  ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white shadow-[0_0_18px_rgba(255,77,54,0.45)]'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Dashboard Overview</span>
+            </button>
+
+            <button
+              onClick={() => handleTabChange('gallery')}
+              className={`px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
+                activeTab === 'gallery'
+                  ? 'bg-[#6B70F0] text-white shadow-[0_0_18px_rgba(107,112,240,0.45)]'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <FolderKanban className="w-4 h-4" />
+              <span>Projects Gallery</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold ml-1">
+                {filteredProjects.length}
+              </span>
+            </button>
+          </div>
+
+          <div className="flex items-center space-x-3 text-xs font-mono text-[#9FA4B8]">
+            <span className="hidden sm:inline">Active Level:</span>
+            <span className="text-white font-bold px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.08] uppercase tracking-wider text-[11px]">
+              {activeTab === 'dashboard' ? 'Studio Dashboard' : 'Media Gallery'}
+            </span>
+          </div>
+        </div>
 
         {activeTab === 'dashboard' ? (
           /* ============================================================ */
@@ -528,6 +577,8 @@ export default function HomePage() {
             <ProjectGallery
               projects={filteredProjects}
               onOpenIngest={() => setIsIngestOpen(true)}
+              searchTerm={globalSearchQuery}
+              onSearchChange={setGlobalSearchQuery}
             />
           </div>
         )}

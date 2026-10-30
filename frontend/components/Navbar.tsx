@@ -2,20 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal, Cpu, Activity } from 'lucide-react';
+import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal, Cpu, Search, X } from 'lucide-react';
 
 interface NavbarProps {
   onOpenIngest?: () => void;
   activeTab?: 'dashboard' | 'gallery' | 'editor';
   onTabChange?: (tab: 'dashboard' | 'gallery' | 'editor') => void;
   projectCount?: number;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenIngest,
   activeTab = 'dashboard',
   onTabChange,
-  projectCount
+  projectCount,
+  searchQuery,
+  onSearchChange
 }) => {
   const handleNavClick = (tab: 'dashboard' | 'gallery' | 'editor') => {
     if (onTabChange) {
@@ -30,11 +34,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#0D0E15]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-[#0D0E15]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Brand / Logo with Futuristic Superlist Accent */}
-        <Link href="/" className="flex items-center space-x-3 group">
+        <Link href="/" className="flex items-center space-x-3 group flex-shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF4D36] via-[#FF5DB1] to-[#6B70F0] p-[1.5px] shadow-[0_0_20px_rgba(255,77,54,0.35)] group-hover:shadow-[0_0_28px_rgba(255,77,54,0.5)] transition-all">
             <div className="w-full h-full bg-[#12131C] rounded-[10px] flex items-center justify-center text-[#FF4D36] group-hover:text-white transition-colors">
               <Waves className="w-4 h-4" />
@@ -50,12 +54,40 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </Link>
 
+        {/* Global Search Bar in Top Header */}
+        {onSearchChange !== undefined && (
+          <div className="hidden md:flex items-center flex-1 max-w-sm mx-2">
+            <div className="relative w-full">
+              <Search className="w-3.5 h-3.5 text-[#FF4D36] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery || ''}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Quick search (Ctrl+K)..."
+                className="w-full bg-[#12131C] border border-white/[0.1] rounded-xl pl-8 pr-8 py-1.5 text-xs text-white placeholder-[#646982] focus:outline-none focus:border-[#FF4D36] transition-colors font-sans"
+              />
+              {searchQuery ? (
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#646982] hover:text-white"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] text-[#9FA4B8] border border-white/[0.08]">
+                  ⌘K
+                </kbd>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Center Futuristic Pill Navigation */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-5">
           <nav className="flex items-center p-1 rounded-full bg-[#161726]/80 border border-white/[0.08] backdrop-blur-md shadow-inner">
             <button
               onClick={() => handleNavClick('dashboard')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'dashboard'
                   ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white shadow-[0_0_15px_rgba(255,77,54,0.4)] font-semibold'
                   : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
@@ -67,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => handleNavClick('gallery')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'gallery'
                   ? 'bg-[#6B70F0] text-white shadow-[0_0_15px_rgba(107,112,240,0.4)] font-semibold'
                   : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
@@ -84,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => handleNavClick('editor')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'editor'
                   ? 'bg-gradient-to-r from-[#6B70F0] to-[#FF5DB1] text-white shadow-[0_0_15px_rgba(255,93,177,0.4)] font-semibold'
                   : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
@@ -100,25 +132,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Real-time Architecture Status Indicator (bpssite telemetry style) */}
-          <div className="hidden lg:flex items-center space-x-4 pl-2">
+          <div className="hidden xl:flex items-center space-x-3">
             <div className="status-indicator-box">
               <span className="status-dot-pulse" />
-              <span>TIER 1 HOT CACHE &lt; 3ms</span>
-            </div>
-            
-            <div className="flex items-center space-x-1.5 text-[11px] font-mono text-[#9FA4B8] bg-white/[0.03] px-2.5 py-1 rounded-full border border-white/[0.06]">
-              <Cpu className="w-3 h-3 text-[#258BF5]" />
-              <span>BS-RoFormer v2</span>
+              <span>HOT STORE &lt; 3ms</span>
             </div>
           </div>
         </div>
 
         {/* Right CTA - Superlist Coral Button with Glow */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2.5 flex-shrink-0">
           {onOpenIngest && (
             <button
               onClick={onOpenIngest}
-              className="btn-coral px-4 py-2 rounded-xl font-medium text-xs flex items-center space-x-1.5 shadow-[0_4px_20px_rgba(255,77,54,0.35)] hover:shadow-[0_6px_28px_rgba(255,77,54,0.5)] transition-all"
+              className="btn-coral px-3.5 sm:px-4 py-2 rounded-xl font-medium text-xs flex items-center space-x-1.5 shadow-[0_4px_20px_rgba(255,77,54,0.35)] hover:shadow-[0_6px_28px_rgba(255,77,54,0.5)] transition-all"
             >
               <Plus className="w-4 h-4" />
               <span className="font-semibold tracking-wide">Ingest Media</span>

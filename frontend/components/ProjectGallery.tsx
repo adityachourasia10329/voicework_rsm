@@ -8,11 +8,21 @@ import { Sliders, Download, Archive, Clock, Video, Search, Filter, CheckCircle2,
 interface ProjectGalleryProps {
   projects: ProjectState[];
   onOpenIngest: () => void;
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
-export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, onOpenIngest }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
+  projects,
+  onOpenIngest,
+  searchTerm: externalSearchTerm,
+  onSearchChange: externalOnSearchChange
+}) => {
+  const [internalSearchTerm, setInternalSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('ALL');
+
+  const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
+  const setSearchTerm = externalOnSearchChange || setInternalSearchTerm;
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
