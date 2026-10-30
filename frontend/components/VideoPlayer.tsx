@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { Play, Pause, RotateCcw, RotateCw, Volume2, Maximize2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, RotateCw, Volume2, Maximize2, Radio } from 'lucide-react';
 
 interface VideoPlayerProps {
   videoUrl: string | null;
@@ -50,50 +50,53 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded border border-zerodha-border overflow-hidden shadow-sm flex flex-col justify-between">
-      {/* Video Canvas */}
-      <div className="relative aspect-video w-full bg-slate-900 flex items-center justify-center">
+    <div className="glass-panel rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl flex flex-col justify-between">
+      {/* Video Viewport Stage */}
+      <div className="relative aspect-video w-full bg-[#08090E] flex items-center justify-center">
         {videoUrl ? (
           <video
             ref={videoRef}
             src={videoUrl}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain cursor-pointer"
             onTimeUpdate={() => {
               if (videoRef.current) onTimeUpdate(videoRef.current.currentTime);
             }}
             onClick={onTogglePlay}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-gray-400">
-            <Volume2 className="w-10 h-10 mb-2 text-zerodha-blue" />
-            <span className="text-xs font-mono">Audio-Only Master Container</span>
+          <div className="flex flex-col items-center justify-center text-[#646982]">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-[#6B70F0] mb-3">
+              <Volume2 className="w-7 h-7" />
+            </div>
+            <span className="text-xs font-mono tracking-wider text-[#9FA4B8]">AUDIO-ONLY LOSSLESS CONTAINER</span>
           </div>
         )}
 
-        {/* Center play button when paused */}
+        {/* Center play button when paused (Superlist Coral with Glow) */}
         {!isPlaying && (
           <button
             onClick={onTogglePlay}
-            className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-zerodha-blue hover:bg-zerodha-blue-hover text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+            className="absolute inset-0 m-auto w-16 h-16 rounded-full btn-coral flex items-center justify-center shadow-[0_0_35px_rgba(255,77,54,0.55)] transition-transform hover:scale-110 active:scale-95"
+            aria-label="Play Video"
           >
-            <Play className="w-6 h-6 ml-1" />
+            <Play className="w-7 h-7 ml-1 fill-white text-white" />
           </button>
         )}
       </div>
 
-      {/* Embedded Controls Bar - Zerodha Clean Toolbar */}
-      <div className="p-3 bg-white border-t border-zerodha-border flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center space-x-2">
+      {/* Embedded Controls Bar - Grounded Futuristic Studio HUD */}
+      <div className="p-3.5 bg-[#12131C]/90 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-between text-xs font-mono">
+        <div className="flex items-center space-x-2.5">
           <button
             onClick={onTogglePlay}
-            className="p-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-heading transition-colors"
+            className="p-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-white transition-colors"
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white" />}
           </button>
 
           <button
             onClick={() => onTimeUpdate(Math.max(0, currentTime - 5))}
-            className="p-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
+            className="p-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
             title="Rewind 5s"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -101,28 +104,33 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
           <button
             onClick={() => onTimeUpdate(Math.min(duration, currentTime + 5))}
-            className="p-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
+            className="p-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
             title="Forward 5s"
           >
             <RotateCw className="w-3.5 h-3.5" />
           </button>
 
-          <div className="text-zerodha-heading font-medium px-2 py-0.5 rounded bg-gray-50 border border-zerodha-border">
-            <span>{formatTimecode(currentTime)}</span>
-            <span className="text-gray-400 mx-1">/</span>
-            <span className="text-zerodha-muted">{formatTimecode(duration)}</span>
+          {/* Timecode Digital HUD */}
+          <div className="px-3 py-1 rounded-xl bg-black/40 border border-white/[0.08] text-xs">
+            <span className="text-[#33C287] font-semibold">{formatTimecode(currentTime)}</span>
+            <span className="text-white/30 mx-1.5">/</span>
+            <span className="text-[#9FA4B8]">{formatTimecode(duration)}</span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 text-zerodha-muted">
-          <span className="text-[10px] text-zerodha-green font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-            Frame Synced
-          </span>
+        {/* Status Telemetry */}
+        <div className="flex items-center space-x-3">
+          <div className="hidden sm:flex items-center space-x-2 text-[10px] text-[#33C287] font-medium bg-[#27A376]/10 px-2.5 py-1 rounded-full border border-[#27A376]/25">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#27A376] shadow-[0_0_6px_#27A376]" />
+            <span>FRAME SYNCED &bull; 44.1kHz</span>
+          </div>
+
           <button
             onClick={() => {
               if (videoRef.current) videoRef.current.requestFullscreen?.();
             }}
-            className="p-1.5 rounded hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
+            className="p-2 rounded-xl hover:bg-white/[0.06] text-[#9FA4B8] hover:text-white transition-colors"
+            title="Fullscreen Viewport"
           >
             <Maximize2 className="w-4 h-4" />
           </button>

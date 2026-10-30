@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "dev": "npm --prefix frontend run dev",
+    "backend": "uvicorn backend.app.main:app --port 8000 --reload",
+    "backend:win": ".\\.venv\\Scripts\\python.exe -m uvicorn backend.app.main:app --port 8000 --reload",
     "build": "npm --prefix frontend install && npm --prefix frontend run build",
     "build:pages": "npm --prefix frontend install && npm --prefix frontend run build",
     "start": "npx -y serve frontend/out -p 3000",

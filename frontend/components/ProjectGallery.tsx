@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ProjectState } from '../lib/types';
-import { Sliders, Download, Archive, Clock, Video, Search, Filter, CheckCircle2 } from 'lucide-react';
+import { Sliders, Download, Archive, Clock, Video, Search, Filter, CheckCircle2, Play, Volume2 } from 'lucide-react';
 
 interface ProjectGalleryProps {
   projects: ProjectState[];
@@ -20,6 +20,22 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, onOpen
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const getStemColorClasses = (type: string) => {
+    if (type.includes('SPEECH')) {
+      return 'bg-[#27A376]/15 text-[#33C287] border-[#27A376]/30'; // Superlist Emerald
+    }
+    if (type.includes('TRAFFIC')) {
+      return 'bg-[#FF4D36]/15 text-[#FF7A59] border-[#FF4D36]/30'; // Superlist Coral
+    }
+    if (type.includes('CROWD')) {
+      return 'bg-[#258BF5]/15 text-[#429CFF] border-[#258BF5]/30'; // Superlist Blue
+    }
+    if (type.includes('HUM') || type.includes('TRANSIENT')) {
+      return 'bg-[#FF5DB1]/15 text-[#FF75C0] border-[#FF5DB1]/30'; // Superlist Pink
+    }
+    return 'bg-[#6B70F0]/15 text-[#8E93FF] border-[#6B70F0]/30'; // Superlist Purple (Music)
+  };
+
   const filteredProjects = projects.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
     if (filterType === 'ALL') return matchesSearch;
@@ -29,50 +45,56 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, onOpen
   });
 
   return (
-    <div className="bg-white rounded border border-zerodha-border shadow-sm p-6">
-      {/* Header & Filter Controls - Zerodha Console Style */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zerodha-border">
+    <div className="glass-panel rounded-2xl p-6 sm:p-7 shadow-2xl">
+      {/* Header & Filter Controls - Futuristic Console Style */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
         <div>
-          <h2 className="text-lg font-semibold text-zerodha-heading">Projects repository</h2>
-          <p className="text-xs text-zerodha-muted mt-0.5">
-            Active audio workloads synced with Tier 1 in-memory hot cache.
+          <h2 className="text-xl font-heading font-bold text-white tracking-tight">Active Workload Sessions</h2>
+          <p className="text-xs text-[#9FA4B8] font-mono mt-0.5">
+            Hot in-memory state tier synced with Dragonfly / Redis &lt; 3ms.
           </p>
         </div>
 
         {/* Search & Filter */}
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-[#646982] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-xs rounded border border-zerodha-border bg-gray-50 focus:bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue w-48 sm:w-64"
+              className="pl-9 pr-3.5 py-2 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white placeholder-[#646982] focus:outline-none focus:border-[#FF4D36] w-48 sm:w-64 font-mono transition-colors"
             />
           </div>
 
-          <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
+          <div className="flex rounded-xl border border-white/[0.1] overflow-hidden text-xs bg-[#12131C] p-0.5">
             <button
               onClick={() => setFilterType('ALL')}
-              className={`px-3 py-1.5 font-medium transition-colors ${
-                filterType === 'ALL' ? 'bg-zerodha-blue text-white' : 'bg-white text-zerodha-muted hover:bg-gray-50'
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                filterType === 'ALL'
+                  ? 'bg-[#FF4D36] text-white shadow-[0_0_12px_rgba(255,77,54,0.4)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white'
               }`}
             >
               All
             </button>
             <button
               onClick={() => setFilterType('VIDEO')}
-              className={`px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
-                filterType === 'VIDEO' ? 'bg-zerodha-blue text-white' : 'bg-white text-zerodha-muted hover:bg-gray-50'
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                filterType === 'VIDEO'
+                  ? 'bg-[#FF4D36] text-white shadow-[0_0_12px_rgba(255,77,54,0.4)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white'
               }`}
             >
               Video
             </button>
             <button
               onClick={() => setFilterType('AUDIO')}
-              className={`px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
-                filterType === 'AUDIO' ? 'bg-zerodha-blue text-white' : 'bg-white text-zerodha-muted hover:bg-gray-50'
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                filterType === 'AUDIO'
+                  ? 'bg-[#FF4D36] text-white shadow-[0_0_12px_rgba(255,77,54,0.4)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white'
               }`}
             >
               Audio
@@ -83,62 +105,72 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, onOpen
 
       {/* Projects List / Cards */}
       {filteredProjects.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-sm text-zerodha-muted">No projects found matching your search.</p>
+        <div className="py-20 text-center">
+          <p className="text-sm text-[#9FA4B8]">No projects found matching your search.</p>
           <button
             onClick={onOpenIngest}
-            className="mt-3 px-4 py-2 rounded bg-zerodha-blue text-white text-xs font-medium"
+            className="btn-coral mt-4 px-5 py-2 rounded-xl text-xs font-semibold"
           >
-            Ingest new media
+            Ingest New Media
           </button>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-white/[0.06]">
           {filteredProjects.map((project) => (
             <div
               key={project.projectId}
-              className="py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-gray-50/60 transition-colors -mx-6 px-6"
+              className="py-5 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:bg-white/[0.02] transition-colors -mx-6 px-6 rounded-xl"
             >
               {/* Left Details */}
               <div className="flex items-start space-x-4">
-                <div className="w-20 h-14 rounded overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
+                <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-[#12131C] border border-white/[0.1] flex-shrink-0 group">
                   <img
                     src={project.mediaContainer.thumbnailUrl || '/thumbnails/default.jpg'}
                     alt={project.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Play className="w-5 h-5 text-white" />
+                  </div>
+                  {project.mediaContainer.hasVideo && (
+                    <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/70 text-[9px] font-mono text-white">
+                      HD
+                    </span>
+                  )}
                 </div>
 
                 <div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2.5">
                     <Link
                       href={`/editor/${project.projectId}`}
-                      className="text-sm font-semibold text-zerodha-heading hover:text-zerodha-blue transition-colors line-clamp-1"
+                      className="text-sm sm:text-base font-heading font-semibold text-white hover:text-[#FF7A59] transition-colors line-clamp-1"
                     >
                       {project.title}
                     </Link>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#27A376]/15 text-[#33C287] border border-[#27A376]/30 font-semibold tracking-wider">
                       {project.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-4 mt-1.5 text-xs text-zerodha-muted font-mono">
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-[#9FA4B8] font-mono">
                     <span className="flex items-center space-x-1">
-                      <Clock className="w-3 h-3 text-gray-400" />
+                      <Clock className="w-3.5 h-3.5 text-[#646982]" />
                       <span>{formatDuration(project.durationSeconds)}</span>
                     </span>
                     <span>&bull;</span>
-                    <span>{project.mediaContainer.hasVideo ? 'Video + Lossless PCM' : 'Lossless WAV'}</span>
+                    <span className="text-white/80">{project.mediaContainer.hasVideo ? 'Video + Lossless PCM' : 'Lossless WAV'}</span>
                     <span>&bull;</span>
-                    <span>{project.stems.length} stems separated</span>
+                    <span className="text-[#6B70F0] font-semibold">{project.stems.length} stems isolated</span>
                   </div>
 
-                  {/* Stem pills */}
-                  <div className="flex flex-wrap gap-1.5 mt-2">
+                  {/* Stem pills in Superlist "Orange-Purple-Pink-Blue-Green" scheme */}
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {project.stems.map((stem) => (
                       <span
                         key={stem.stemId}
-                        className="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 font-mono"
+                        className={`text-[10px] px-2.5 py-0.5 rounded-md border font-mono font-medium ${getStemColorClasses(
+                          stem.type
+                        )}`}
                       >
                         {stem.label}
                       </span>
@@ -148,30 +180,30 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ projects, onOpen
               </div>
 
               {/* Right Action Buttons */}
-              <div className="flex items-center space-x-2 flex-shrink-0">
+              <div className="flex items-center space-x-2.5 flex-shrink-0">
                 <Link
                   href={`/editor/${project.projectId}`}
-                  className="px-4 py-2 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all flex items-center space-x-1.5"
+                  className="btn-coral px-4 py-2 rounded-xl text-xs font-semibold shadow-[0_4px_16px_rgba(255,77,54,0.35)] flex items-center space-x-1.5"
                 >
                   <Sliders className="w-3.5 h-3.5" />
-                  <span>Open Editor</span>
+                  <span>Open Studio</span>
                 </Link>
 
                 <button
                   onClick={() => alert(`Starting zero-loss video remuxing with FFmpeg (-c:v copy) for project ${project.projectId}...`)}
-                  className="px-3 py-2 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-text text-xs font-medium transition-colors flex items-center space-x-1"
+                  className="px-3.5 py-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-medium transition-colors flex items-center space-x-1.5"
                   title="Lossless Video Remuxing"
                 >
-                  <Download className="w-3.5 h-3.5 text-zerodha-muted" />
+                  <Download className="w-3.5 h-3.5 text-[#258BF5]" />
                   <span className="hidden sm:inline">Remux</span>
                 </button>
 
                 <button
                   onClick={() => alert(`Exporting stems ZIP for project ${project.projectId}...`)}
-                  className="px-3 py-2 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-text text-xs font-medium transition-colors flex items-center space-x-1"
+                  className="px-3.5 py-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-medium transition-colors flex items-center space-x-1.5"
                   title="Export Stems .zip"
                 >
-                  <Archive className="w-3.5 h-3.5 text-zerodha-muted" />
+                  <Archive className="w-3.5 h-3.5 text-[#6B70F0]" />
                   <span className="hidden sm:inline">Stems</span>
                 </button>
               </div>

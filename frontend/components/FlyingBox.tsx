@@ -64,24 +64,24 @@ export const FlyingBox: React.FC<FlyingBoxProps> = ({
       {/* Explanatory Flying Box Popover */}
       {isVisible && (
         <div
-          className={`absolute z-50 w-64 p-3 bg-slate-900 text-white rounded-md shadow-xl border border-slate-700 pointer-events-none animate-in fade-in zoom-in-95 duration-150 ${positionClasses[position]}`}
-          style={{ minWidth: '220px', maxWidth: '300px' }}
+          className={`absolute z-50 w-64 p-3.5 glass-panel-elevated text-white rounded-xl shadow-2xl border border-white/[0.14] pointer-events-none animate-in fade-in zoom-in-95 duration-150 ${positionClasses[position]}`}
+          style={{ minWidth: '230px', maxWidth: '320px' }}
         >
           {/* Header */}
-          <div className="flex items-center space-x-1.5 pb-1 border-b border-slate-800 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-zerodha-blue" />
-            <span className="text-[11px] font-semibold tracking-tight text-slate-100">{title}</span>
+          <div className="flex items-center space-x-2 pb-1.5 border-b border-white/[0.08] mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF4D36] shadow-[0_0_6px_#FF4D36]" />
+            <span className="text-xs font-heading font-bold tracking-tight text-white">{title}</span>
           </div>
 
           {/* Plain English Beginner Explanation */}
-          <p className="text-[11px] text-slate-300 leading-relaxed font-normal">
+          <p className="text-xs text-[#9FA4B8] leading-relaxed font-sans">
             {content}
           </p>
 
           {/* Optional Pro Recommendation */}
           {recommendation && (
-            <div className="mt-2 pt-1.5 border-t border-slate-800 text-[10px] text-emerald-400 font-mono">
-              <span className="font-semibold text-emerald-300">★ Tip: </span>
+            <div className="mt-2.5 pt-2 border-t border-white/[0.08] text-[11px] text-[#33C287] font-mono">
+              <span className="font-bold text-[#27A376]">★ Tip: </span>
               {recommendation}
             </div>
           )}

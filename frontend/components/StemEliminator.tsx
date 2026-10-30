@@ -371,21 +371,21 @@ export const StemEliminator: React.FC<StemEliminatorProps> = ({
   }, [selectedIds]);
 
   return (
-    <div className="bg-[#0b1320] text-slate-100 rounded-lg border border-[#1e2a3f] shadow-xl overflow-hidden font-sans">
+    <div className="glass-panel text-slate-100 rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden font-sans">
       {/* Top Header matching Screenshot 2 */}
-      <div className="p-5 border-b border-[#1c273c] flex flex-wrap items-center justify-between gap-4 bg-[#0e1726]">
+      <div className="p-5 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-4 bg-[#141522]">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <AudioWaveform className="w-4 h-4" />
+          <div className="w-9 h-9 rounded-xl bg-[#FF4D36]/15 border border-[#FF4D36]/30 flex items-center justify-center text-[#FF4D36]">
+            <AudioWaveform className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="text-lg font-semibold tracking-tight text-white">Stems &amp; Sound Eliminator</h2>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <h2 className="text-lg font-heading font-bold tracking-tight text-white">Stems &amp; Sound Eliminator</h2>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FF5DB1]/15 text-[#FF75C0] border border-[#FF5DB1]/30 font-semibold uppercase tracking-wider">
                 Surgical Removal Engine
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#9FA4B8] mt-0.5">
               Select any instrument, traffic, or noise box below to subtract from your audio master.
             </p>
           </div>
@@ -395,20 +395,20 @@ export const StemEliminator: React.FC<StemEliminatorProps> = ({
         <div className="flex items-center space-x-2 text-xs">
           <button
             onClick={selectAllNoise}
-            className="px-2.5 py-1 rounded bg-[#182338] hover:bg-[#202e47] text-slate-300 border border-[#2a3a55] transition-colors"
+            className="px-3 py-1.5 rounded-xl bg-[#FF4D36]/15 hover:bg-[#FF4D36]/25 text-[#FF7A59] border border-[#FF4D36]/30 transition-colors font-medium"
           >
             + All Noise &amp; Traffic
           </button>
           <button
             onClick={selectAllInstruments}
-            className="px-2.5 py-1 rounded bg-[#182338] hover:bg-[#202e47] text-slate-300 border border-[#2a3a55] transition-colors"
+            className="px-3 py-1.5 rounded-xl bg-[#6B70F0]/15 hover:bg-[#6B70F0]/25 text-[#8E93FF] border border-[#6B70F0]/30 transition-colors font-medium"
           >
             + All Instruments
           </button>
           {selectedIds.size > 0 && (
             <button
               onClick={clearAllSelections}
-              className="px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition-colors flex items-center space-x-1"
+              className="px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-colors flex items-center space-x-1"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Clear ({selectedIds.size})</span>
@@ -417,16 +417,16 @@ export const StemEliminator: React.FC<StemEliminatorProps> = ({
         </div>
       </div>
 
-      {/* Search Bar matching Screenshot 2 */}
-      <div className="p-4 bg-[#090f1a] border-b border-[#182338]">
+      {/* Search Bar */}
+      <div className="p-4 bg-[#0A0B10] border-b border-white/[0.08]">
         <div className="relative max-w-xl">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#646982] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search stems (e.g. Traffic, Bass, Guitar, Drums, Wind, Piano...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded bg-[#121c2e] border border-[#22314a] text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors font-mono"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-[#12131C] border border-white/[0.1] text-white placeholder-[#646982] focus:outline-none focus:border-[#FF4D36] transition-colors font-mono"
           />
           {searchQuery && (
             <button

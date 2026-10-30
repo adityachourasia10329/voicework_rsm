@@ -24,7 +24,9 @@ import {
   History,
   FileAudio,
   SlidersHorizontal,
-  FolderKanban
+  FolderKanban,
+  Radio,
+  Cpu
 } from 'lucide-react';
 
 interface EditorClientProps {
@@ -45,7 +47,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   const [isSurgicalOpen, setIsSurgicalOpen] = useState<boolean>(false);
   const [surgicalRange, setSurgicalRange] = useState<{ start: number; end: number }>({ start: 0, end: 5 });
 
-  // Download edited file modal state (Requirements 1 & 5)
+  // Download edited file modal state
   const [isDownloadOpen, setIsDownloadOpen] = useState<boolean>(false);
 
   // Save/Export state
@@ -61,9 +63,9 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-zerodha-bg flex items-center justify-center text-zerodha-text font-mono">
-        <div className="flex items-center space-x-3 bg-white p-6 rounded border border-zerodha-border shadow-sm">
-          <div className="w-4 h-4 border-2 border-zerodha-blue border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#0D0E15] flex items-center justify-center text-white font-mono">
+        <div className="flex items-center space-x-3 glass-panel p-6 rounded-2xl border border-white/[0.08] shadow-2xl">
+          <div className="w-5 h-5 border-2 border-[#FF4D36] border-t-transparent rounded-full animate-spin" />
           <span className="text-sm">Retrieving project state from Redis Hot Cache (&lt; 3ms)...</span>
         </div>
       </div>
@@ -102,14 +104,14 @@ export default function EditorClient({ projectId }: EditorClientProps) {
       } else if (preset === 'NATURAL_AMBIENT_CLEAN') {
         newStems = newStems.map((s) => ({
           ...s,
-          volumeDb: s.type === 'SPEECH_MAIN' ? 0.0 : (s.type.includes('NOISE') ? -18.0 : -12.0),
+          volumeDb: s.type === 'SPEECH_MAIN' ? +1.0 : -18.0,
           isMuted: false
         }));
       } else if (preset === 'REMOVE_MUSIC') {
         newStems = newStems.map((s) => ({
           ...s,
-          volumeDb: s.type.includes('MUSIC') ? -60.0 : 0.0,
-          isMuted: s.type.includes('MUSIC')
+          volumeDb: s.type.includes('MUSIC') ? -60.0 : s.volumeDb,
+          isMuted: s.type.includes('MUSIC') ? true : s.isMuted
         }));
       }
 
@@ -124,27 +126,36 @@ export default function EditorClient({ projectId }: EditorClientProps) {
   const handleChangeClarity = (val: number) => {
     setProject((prev) => {
       if (!prev) return null;
-      const suppressionDb = -10 - (val / 100) * 45;
+      const suppressionDb = -((val / 100) * 40.0);
       const updatedStems = prev.stems.map((s) => {
-        if (s.type.includes('NOISE')) {
-          return { ...s, volumeDb: suppressionDb };
-        }
-        return s;
+        if (s.type === 'SPEECH_MAIN') return s;
+        return {
+          ...s,
+          volumeDb: Math.min(s.volumeDb, suppressionDb),
+          isMuted: val > 95
+        };
       });
+
       return {
         ...prev,
-        mixer: { ...prev.mixer, expressClarityDial: val },
+        mixer: {
+          ...prev.mixer,
+          expressClarityDial: val,
+          preset: 'CUSTOM'
+        },
         stems: updatedStems
       };
     });
   };
 
+  // Surgical Patch handlers
   const handleApplyPatch = (revision: SurgicalRevision) => {
     setProject((prev) => {
       if (!prev) return null;
+      const history = [revision, ...(prev.surgicalHistory || [])];
       return {
         ...prev,
-        surgicalHistory: [revision, ...(prev.surgicalHistory || [])]
+        surgicalHistory: history
       };
     });
   };
@@ -184,29 +195,26 @@ export default function EditorClient({ projectId }: EditorClientProps) {
     }, 300);
   };
 
-  const handleRemuxExport = () => {
-    setIsDownloadOpen(true);
-  };
-
   return (
-    <div className="min-h-screen bg-zerodha-bg pb-20">
+    <div className="min-h-screen text-[#F3F4F8] font-sans pb-24">
       <Navbar projectCount={INITIAL_PROJECTS.length} activeTab="editor" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {/* Top Navigation & Workspace Title Bar */}
-        <div className="bg-white rounded border border-zerodha-border p-4 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
+        
+        {/* Top Navigation & Workspace Title Bar (Futuristic Studio HUD) */}
+        <div className="glass-panel rounded-2xl p-4 sm:p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
             <Link
               href="/"
-              className="p-1.5 rounded border border-zerodha-border hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading transition-colors"
+              className="p-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
               title="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-base font-semibold text-zerodha-heading tracking-tight">{project.title}</h1>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+              <div className="flex items-center space-x-2.5">
+                <h1 className="text-base sm:text-lg font-heading font-bold text-white tracking-tight">{project.title}</h1>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#27A376]/15 text-[#33C287] border border-[#27A376]/30 font-semibold tracking-wider">
                   {project.status}
                 </span>
                 <FlyingBox
@@ -214,19 +222,19 @@ export default function EditorClient({ projectId }: EditorClientProps) {
                   content="This workspace lets you mix isolated stems, inspect audio waves across frequency octaves, surgically repair defects, eliminate unwanted instruments or traffic, and download the finished master video or audio."
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-zerodha-muted font-mono">
+              <div className="flex flex-wrap items-center gap-2.5 mt-1 text-xs text-[#9FA4B8] font-mono">
                 <span>Duration: {Math.floor(project.durationSeconds / 60)}m {Math.floor(project.durationSeconds % 60)}s</span>
                 <span>&bull;</span>
                 <div className="flex items-center space-x-1.5">
-                  <FolderKanban className="w-3.5 h-3.5 text-zerodha-blue" />
-                  <span className="text-gray-600 font-medium">Session:</span>
+                  <FolderKanban className="w-3.5 h-3.5 text-[#6B70F0]" />
+                  <span className="text-white/70 font-medium">Session:</span>
                   <select
                     value={selectedProjectId}
                     onChange={(e) => {
                       setSelectedProjectId(e.target.value);
                       router.push(`/editor/${e.target.value}`);
                     }}
-                    className="px-2 py-0.5 text-xs rounded border border-zerodha-border bg-gray-50 hover:bg-white text-zerodha-heading font-medium focus:outline-none focus:border-zerodha-blue cursor-pointer max-w-[210px] sm:max-w-[320px] truncate"
+                    className="px-2.5 py-1 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white font-medium focus:outline-none focus:border-[#FF4D36] cursor-pointer max-w-[210px] sm:max-w-[320px] truncate"
                   >
                     {INITIAL_PROJECTS.map((p) => (
                       <option key={p.projectId} value={p.projectId}>
@@ -240,29 +248,29 @@ export default function EditorClient({ projectId }: EditorClientProps) {
           </div>
 
           {/* Mode Selector & Clean Export Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-3">
             {/* 3-Tier Mode Selector: Stems Eliminator, Full Authority, Express */}
             <div className="flex items-center space-x-1.5">
-              <div className="flex rounded border border-zerodha-border overflow-hidden text-xs">
+              <nav className="flex p-1 rounded-xl bg-[#12131C] border border-white/[0.1] text-xs font-mono">
                 <button
                   onClick={() => setEditorMode('STEMS_REMOVAL')}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium transition-colors ${
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
                     editorMode === 'STEMS_REMOVAL'
-                      ? 'bg-zerodha-blue text-white font-semibold'
-                      : 'bg-white text-zerodha-muted hover:bg-gray-50'
+                      ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white font-semibold shadow-[0_0_15px_rgba(255,77,54,0.4)]'
+                      : 'text-[#9FA4B8] hover:text-white'
                   }`}
                   title="Stems & Noise Eliminator (Instruments, Traffic, Sound removal)"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   <span>Stems &amp; Noise</span>
                 </button>
 
                 <button
                   onClick={() => setEditorMode('FULL_AUTHORITY')}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
                     editorMode === 'FULL_AUTHORITY'
-                      ? 'bg-zerodha-blue text-white font-semibold'
-                      : 'bg-white text-zerodha-muted hover:bg-gray-50'
+                      ? 'bg-[#6B70F0] text-white font-semibold shadow-[0_0_15px_rgba(107,112,240,0.4)]'
+                      : 'text-[#9FA4B8] hover:text-white'
                   }`}
                   title="Full Authority multi-channel mixer"
                 >
@@ -272,17 +280,17 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
                 <button
                   onClick={() => setEditorMode('EXPRESS')}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 font-medium border-l border-zerodha-border transition-colors ${
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
                     editorMode === 'EXPRESS'
-                      ? 'bg-zerodha-blue text-white font-semibold'
-                      : 'bg-white text-zerodha-muted hover:bg-gray-50'
+                      ? 'bg-gradient-to-r from-[#6B70F0] to-[#FF5DB1] text-white font-semibold shadow-[0_0_15px_rgba(255,93,177,0.4)]'
+                      : 'text-[#9FA4B8] hover:text-white'
                   }`}
                   title="1-dial express clarity"
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
                   <span>Express</span>
                 </button>
-              </div>
+              </nav>
               <FlyingBox
                 title="Editor Mode Switch"
                 content="Stems & Noise lets you eliminate specific instruments, traffic, or noise boxes. Mixer provides multi-channel faders. Express provides a fast 1-dial clarity slider."
@@ -293,16 +301,16 @@ export default function EditorClient({ projectId }: EditorClientProps) {
             <button
               onClick={handleSaveToRedis}
               disabled={isSaving}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-xs font-medium text-zerodha-text transition-colors"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono font-medium text-[#9FA4B8] hover:text-white transition-colors"
             >
               {saveSuccess ? (
                 <>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-zerodha-green" />
-                  <span className="text-zerodha-green font-mono">Synced (&lt;3ms)</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#27A376]" />
+                  <span className="text-[#33C287] font-semibold">Synced (&lt;3ms)</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-3.5 h-3.5 text-zerodha-muted" />
+                  <Save className="w-3.5 h-3.5" />
                   <span>Sync State</span>
                 </>
               )}
@@ -312,10 +320,10 @@ export default function EditorClient({ projectId }: EditorClientProps) {
               content="Saves all fader levels and surgical intervals into Tier 1 in-memory Redis in <3ms. Keeps your work preserved."
             />
 
-            {/* Remux Export Button */}
+            {/* Remux Export Master Button (Superlist Coral) */}
             <button
               onClick={() => setIsDownloadOpen(true)}
-              className="flex items-center space-x-1.5 px-4 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all"
+              className="btn-coral flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-[0_4px_20px_rgba(255,77,54,0.35)]"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export Master</span>
@@ -325,8 +333,8 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
         {/* Top Grid: Video Canvas & Spectrogram Canvas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-          {/* Synced Video Player & Dedicated Download Option Underneath Preview (Requirements 1 & 5) */}
-          <div className="lg:col-span-5 space-y-3">
+          {/* Synced Video Player & Dedicated Download Option Underneath Preview */}
+          <div className="lg:col-span-5 space-y-4">
             <VideoPlayer
               videoUrl={project.mediaContainer.originalVideoUrl}
               currentTime={currentTime}
@@ -337,30 +345,32 @@ export default function EditorClient({ projectId }: EditorClientProps) {
             />
 
             {/* Download Option for the New Edited File Directly Under Video Preview */}
-            <div className="bg-white p-3.5 rounded border border-zerodha-border shadow-sm flex flex-col justify-between space-y-2.5">
+            <div className="glass-panel p-4 rounded-2xl border border-white/[0.08] shadow-lg flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1.5">
-                  <Download className="w-4 h-4 text-zerodha-blue" />
-                  <span className="text-xs font-semibold text-zerodha-heading">Download Edited Master File</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-7 h-7 rounded-lg bg-[#FF4D36]/15 border border-[#FF4D36]/30 flex items-center justify-center text-[#FF4D36]">
+                    <Download className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs font-heading font-bold text-white">Download Edited Master</span>
                   <FlyingBox
                     title="Export Edited File"
                     content="Download your refined video or audio file. Choose from MP4, MOV, MKV, WAV, FLAC, or MP3 with lossless video stream copy (-c:v copy)."
                     recommendation="Click the button to select your target container format and audio mix options."
                   />
                 </div>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Ready to Export
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#27A376]/15 text-[#33C287] border border-[#27A376]/30 font-semibold">
+                  READY TO EXPORT
                 </span>
               </div>
 
-              <p className="text-[11px] text-zerodha-muted leading-relaxed">
-                Lossless remuxing guarantees zero video compression artifacts. Prompts you to pick your preferred format before downloading.
+              <p className="text-[11px] text-[#9FA4B8] leading-relaxed">
+                Zero-loss remuxing guarantees bit-identical video streams untouched by compression. Pick your preferred target container below.
               </p>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
                 <div className="flex flex-wrap gap-1">
                   {['MP4', 'MOV', 'MKV', 'WAV', 'FLAC', 'MP3'].map((fmt) => (
-                    <span key={fmt} className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-gray-100 text-gray-700 border border-gray-200">
+                    <span key={fmt} className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.04] text-[#9FA4B8] border border-white/[0.06]">
                       {fmt}
                     </span>
                   ))}
@@ -368,10 +378,10 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
                 <button
                   onClick={() => setIsDownloadOpen(true)}
-                  className="px-3.5 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all flex items-center space-x-1.5 flex-shrink-0"
+                  className="btn-coral px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 flex-shrink-0"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Choose Format &amp; Download</span>
+                  <span>Choose Format</span>
                 </button>
               </div>
             </div>
@@ -415,42 +425,43 @@ export default function EditorClient({ projectId }: EditorClientProps) {
 
           {/* Surgical Revisions History Log (Audit Trail) */}
           {project.surgicalHistory && project.surgicalHistory.length > 0 && (
-            <div className="bg-white rounded border border-zerodha-border p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-zerodha-border">
-                <div className="flex items-center space-x-2 text-xs font-semibold text-zerodha-heading">
-                  <History className="w-4 h-4 text-zerodha-blue" />
+            <div className="glass-panel rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.08]">
+                <div className="flex items-center space-x-2 text-xs font-heading font-bold text-white">
+                  <History className="w-4 h-4 text-[#6B70F0]" />
                   <span>Surgical Revision Audit Log</span>
                 </div>
-                <span className="text-[11px] font-mono text-zerodha-muted">
+                <span className="text-[11px] font-mono text-[#9FA4B8]">
                   {project.surgicalHistory.length} re-processed intervals
                 </span>
               </div>
 
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-white/[0.06]">
                 {project.surgicalHistory.map((rev) => (
                   <div
                     key={rev.revisionId}
-                    className="py-2.5 flex items-center justify-between text-xs font-mono"
+                    className="py-3 flex flex-wrap items-center justify-between gap-3 text-xs font-mono"
                   >
                     <div className="flex items-center space-x-3">
-                      <span className="px-2 py-0.5 rounded bg-blue-50 text-zerodha-blue font-medium border border-blue-200">
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#6B70F0]/15 text-[#8E93FF] font-semibold border border-[#6B70F0]/30 text-[11px]">
                         {rev.flagType}
                       </span>
-                      <span className="text-zerodha-heading font-medium">
+                      <span className="text-white font-medium">
                         {rev.startSec}s &rarr; {rev.endSec}s ({(rev.endSec - rev.startSec).toFixed(1)}s)
                       </span>
-                      <span className="text-zerodha-muted text-[11px]">
+                      <span className="text-[#9FA4B8] text-[11px] hidden sm:inline">
                         {rev.appliedModel} (Crossfade: {rev.crossfadeWindowSec}s)
                       </span>
                     </div>
 
                     <div className="flex items-center space-x-3">
-                      <span className="text-zerodha-green text-[11px] font-medium">
-                        &bull; Spliced into Master
+                      <span className="text-[#33C287] text-[11px] font-medium flex items-center space-x-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#27A376]" />
+                        <span>Spliced into Master</span>
                       </span>
                       <button
                         onClick={() => setCurrentTime(rev.startSec)}
-                        className="px-2.5 py-1 rounded border border-zerodha-border hover:bg-gray-50 text-zerodha-text transition-colors text-[11px]"
+                        className="px-2.5 py-1 rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-white transition-colors text-[11px]"
                       >
                         Seek
                       </button>
@@ -473,7 +484,7 @@ export default function EditorClient({ projectId }: EditorClientProps) {
         onApplyPatch={handleApplyPatch}
       />
 
-      {/* Download Edited File Format Modal (Requirements 1 & 5) */}
+      {/* Download Edited File Format Modal */}
       <DownloadModal
         isOpen={isDownloadOpen}
         onClose={() => setIsDownloadOpen(false)}

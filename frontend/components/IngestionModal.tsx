@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, UploadCloud, Youtube, Cpu, Sparkles, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, Youtube, X, Cpu, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ProjectState } from '../lib/types';
 import { FlyingBox } from './FlyingBox';
 
@@ -13,52 +13,56 @@ interface IngestionModalProps {
 
 export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose, onProjectCreated }) => {
   const [tab, setTab] = useState<'upload' | 'youtube'>('upload');
+  const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [title, setTitle] = useState('');
   const [model, setModel] = useState('bs-roformer-v2');
   const [deepFilter, setDeepFilter] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progressStep, setProgressStep] = useState<string>('');
+  const [progressStep, setProgressStep] = useState('');
 
   if (!isOpen) return null;
 
   const handleFileDrop = (e: React.DragEvent) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const selected = e.dataTransfer.files[0];
-      setFile(selected);
-      if (!title) setTitle(selected.name.replace(/\.[^/.]+$/, ''));
+      setFile(e.dataTransfer.files[0]);
+      if (!title) {
+        setTitle(e.dataTransfer.files[0].name.replace(/\.[^/.]+$/, ''));
+      }
     }
   };
 
   const handleStartIngestion = async () => {
     setIsProcessing(true);
-    setProgressStep('Probing media streams and container metadata...');
+    setProgressStep('Probe media format & container specs...');
 
     try {
-      setTimeout(() => {
-        setProgressStep('FFmpeg lossless audio extraction (-acodec pcm_s16le)...');
-      }, 600);
+      const formData = new FormData();
+      if (title) formData.append('title', title);
+      formData.append('separationModel', model);
+
+      if (tab === 'upload' && file) {
+        formData.append('file', file);
+      } else if (tab === 'youtube' && youtubeUrl) {
+        formData.append('youtubeUrl', youtubeUrl);
+      }
+
+      // Simulated pipeline steps
+      setTimeout(() => setProgressStep('Lossless PCM 16-bit 44.1kHz audio extraction via FFmpeg...'), 600);
+      setTimeout(() => setProgressStep('Slicing 60s overlapping chunks with 2.0s crossfades (OOM protection)...'), 1300);
+      setTimeout(() => setProgressStep(`Running ${model} AI stem separation matrix...`), 2000);
 
       setTimeout(() => {
-        setProgressStep('Audio chunker: 60s windows with 2s crossfades (OOM Guard)...');
-      }, 1200);
-
-      setTimeout(() => {
-        setProgressStep('Running BS-RoFormer stem isolation & DeepFilterNet3 speech recovery...');
-      }, 1900);
-
-      setTimeout(() => {
-        const newProjId = 'proj-' + Math.random().toString(36).substring(2, 9);
+        const generatedId = `proj-${Date.now().toString(36)}`;
         const newProject: ProjectState = {
-          projectId: newProjId,
-          orgId: 'org-rsm-01',
-          title: title || (tab === 'youtube' ? 'YouTube Capture' : (file?.name || 'New Audio Project')),
+          projectId: generatedId,
+          orgId: 'org-rsm-enterprise-01',
+          title: title || (tab === 'upload' && file ? file.name : 'Stream Ingestion Master'),
           status: 'READY',
-          durationSeconds: 120.0,
-          sourceType: tab === 'youtube' ? 'YOUTUBE' : 'UPLOAD',
-          sourceUrl: tab === 'youtube' ? youtubeUrl : '/storage/uploads/sample.mp4',
+          durationSeconds: 118.0,
+          sourceType: tab === 'upload' ? 'UPLOAD' : 'YOUTUBE',
+          sourceUrl: tab === 'upload' && file ? file.name : youtubeUrl,
           mediaContainer: {
             originalVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
             masterAudioWavUrl: '/audio/demo_master.wav',
@@ -84,7 +88,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: 0.0,
-              colorHex: '#26a69a'
+              colorHex: '#27A376'
             },
             {
               stemId: 'stem-tr-1',
@@ -95,7 +99,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: -0.2,
-              colorHex: '#df514c'
+              colorHex: '#FF4D36'
             },
             {
               stemId: 'stem-cr-1',
@@ -106,7 +110,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: 0.2,
-              colorHex: '#387ed1'
+              colorHex: '#258BF5'
             },
             {
               stemId: 'stem-mu-1',
@@ -117,7 +121,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
               isMuted: false,
               isSolo: false,
               pan: 0.0,
-              colorHex: '#7c3aed'
+              colorHex: '#6B70F0'
             }
           ],
           surgicalHistory: [],
@@ -127,7 +131,7 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
         setIsProcessing(false);
         onProjectCreated(newProject);
         onClose();
-      }, 2600);
+      }, 2700);
 
     } catch (err) {
       setIsProcessing(false);
@@ -136,31 +140,35 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-xl bg-white rounded-lg p-6 shadow-xl border border-zerodha-border">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="relative w-full max-w-xl glass-panel-elevated rounded-2xl p-6 sm:p-7 shadow-2xl border border-white/[0.12] text-white">
         {/* Close Button */}
         <button
           onClick={onClose}
           disabled={isProcessing}
-          className="absolute top-4 right-4 p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-5 right-5 p-1.5 rounded-xl hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-base font-semibold text-zerodha-heading flex items-center space-x-2">
-          <UploadCloud className="w-5 h-5 text-zerodha-blue" />
-          <span>Ingest Media Stream</span>
-        </h2>
-        <p className="text-xs text-zerodha-muted mt-0.5">
-          Supports arbitrary length files (30m to 2h+). Lossless audio extraction &amp; GPU chunking.
-        </p>
+        <div className="flex items-center space-x-3 pb-4 border-b border-white/[0.08]">
+          <div className="w-9 h-9 rounded-xl bg-[#FF4D36]/15 border border-[#FF4D36]/30 flex items-center justify-center text-[#FF4D36]">
+            <UploadCloud className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-heading font-bold text-white">Ingest Media Stream</h2>
+            <p className="text-xs text-[#9FA4B8] font-mono mt-0.5">
+              Lossless audio extraction, automated 60s chunking &amp; SOTA separation.
+            </p>
+          </div>
+        </div>
 
         {/* Tab selection */}
-        <div className="flex border-b border-zerodha-border mt-4 text-xs font-medium">
+        <div className="flex border-b border-white/[0.08] mt-4 text-xs font-mono">
           <button
             onClick={() => setTab('upload')}
-            className={`flex items-center space-x-2 px-4 py-2 border-b-2 transition-colors ${
-              tab === 'upload' ? 'border-zerodha-blue text-zerodha-blue font-semibold' : 'border-transparent text-zerodha-muted hover:text-zerodha-heading'
+            className={`flex items-center space-x-2 px-4 py-2.5 border-b-2 transition-all ${
+              tab === 'upload' ? 'border-[#FF4D36] text-[#FF7A59] font-bold' : 'border-transparent text-[#9FA4B8] hover:text-white'
             }`}
           >
             <UploadCloud className="w-4 h-4" />
@@ -168,8 +176,8 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
           </button>
           <button
             onClick={() => setTab('youtube')}
-            className={`flex items-center space-x-2 px-4 py-2 border-b-2 transition-colors ${
-              tab === 'youtube' ? 'border-zerodha-blue text-zerodha-blue font-semibold' : 'border-transparent text-zerodha-muted hover:text-zerodha-heading'
+            className={`flex items-center space-x-2 px-4 py-2.5 border-b-2 transition-all ${
+              tab === 'youtube' ? 'border-[#FF4D36] text-[#FF7A59] font-bold' : 'border-transparent text-[#9FA4B8] hover:text-white'
             }`}
           >
             <Youtube className="w-4 h-4 text-red-500" />
@@ -180,13 +188,15 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
         {/* Form Body */}
         <div className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-zerodha-heading mb-1">Project Title</label>
+            <label className="block text-xs font-mono text-[#9FA4B8] uppercase tracking-wider font-semibold mb-1.5">
+              Project Title
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Broadcast Episode 24 - Voice Master"
-              className="w-full px-3 py-2 text-xs rounded border border-zerodha-border bg-gray-50 focus:bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue"
+              className="w-full px-3.5 py-2 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white placeholder-[#646982] focus:outline-none focus:border-[#FF4D36] font-mono"
             />
           </div>
 
@@ -194,19 +204,19 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleFileDrop}
-              className="border-2 border-dashed border-gray-200 hover:border-zerodha-blue rounded p-8 text-center cursor-pointer transition-colors bg-gray-50/60"
+              className="border-2 border-dashed border-white/[0.12] hover:border-[#FF4D36] rounded-2xl p-8 text-center cursor-pointer transition-all bg-[#12131C]/60 hover:bg-[#12131C]"
               onClick={() => document.getElementById('file-input')?.click()}
             >
-              <UploadCloud className="w-8 h-8 text-zerodha-muted mx-auto mb-2" />
+              <UploadCloud className="w-9 h-9 text-[#646982] mx-auto mb-2" />
               {file ? (
-                <div className="text-xs text-zerodha-green font-medium flex items-center justify-center space-x-1">
+                <div className="text-xs text-[#33C287] font-semibold flex items-center justify-center space-x-1.5 font-mono">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(1)} MB)</span>
                 </div>
               ) : (
                 <>
-                  <p className="text-xs text-zerodha-heading font-medium">Click or drag &amp; drop video or audio file</p>
-                  <p className="text-[11px] text-zerodha-muted mt-1">MP4, MOV, MKV, WAV, FLAC, MP3 (No duration limit)</p>
+                  <p className="text-xs font-heading font-semibold text-white">Click or drag &amp; drop video or audio file</p>
+                  <p className="text-[11px] text-[#9FA4B8] font-mono mt-1">MP4, MOV, MKV, WAV, FLAC, MP3 (No duration limit)</p>
                 </>
               )}
               <input
@@ -224,26 +234,28 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-medium text-zerodha-heading mb-1">YouTube Video URL</label>
+              <label className="block text-xs font-mono text-[#9FA4B8] uppercase tracking-wider font-semibold mb-1.5">
+                YouTube Video URL
+              </label>
               <input
                 type="url"
                 value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full px-3 py-2 text-xs rounded border border-zerodha-border bg-gray-50 focus:bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue font-mono"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white placeholder-[#646982] focus:outline-none focus:border-[#FF4D36] font-mono"
               />
-              <p className="text-[11px] text-zerodha-muted mt-1">
+              <p className="text-[11px] text-[#9FA4B8] font-mono mt-1">
                 Extracted losslessly using headless `yt-dlp` stream capture.
               </p>
             </div>
           )}
 
           {/* Model selection */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <div className="col-span-2 sm:col-span-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="col-span-1">
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-zerodha-heading flex items-center space-x-1">
-                  <Cpu className="w-3.5 h-3.5 text-zerodha-blue" />
+                <label className="text-xs font-mono text-[#9FA4B8] uppercase tracking-wider font-semibold flex items-center space-x-1">
+                  <Cpu className="w-3.5 h-3.5 text-[#258BF5]" />
                   <span>Separation Model</span>
                   <FlyingBox
                     title="Choosing a Separation Model"
@@ -251,84 +263,33 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
                     recommendation="BS-RoFormer v2 is recommended for general podcasts and studio video."
                   />
                 </label>
-                <span className="text-[10px] font-mono text-zerodha-blue font-semibold">
-                  {model === 'bs-roformer-v2' ? '★ Top Quality' : model === 'melband-roformer' ? '★ High Res 48kHz' : '★ 6-Stem Multi-Noise'}
-                </span>
               </div>
 
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs rounded border border-zerodha-border bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue font-mono"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white focus:outline-none focus:border-[#FF4D36] font-mono"
               >
                 <option value="bs-roformer-v2">BS-RoFormer v2 (SOTA Multi-Stem)</option>
                 <option value="melband-roformer">Mel-Band RoFormer (HD Audio)</option>
                 <option value="htdemucs-v4">HTDemucs v4 (6-Stem Demixing)</option>
               </select>
-
-              {/* Dynamic Flying Explanatory Box for the selected model (Requirement 7) */}
-              <div className="mt-2 p-2.5 rounded bg-blue-50/70 border border-blue-200 text-xs">
-                {model === 'bs-roformer-v2' && (
-                  <div>
-                    <div className="font-semibold text-zerodha-heading text-[11px] flex items-center space-x-1">
-                      <span className="w-2 h-2 rounded-full bg-blue-600" />
-                      <span>Best for: Dialogue &amp; Music Separation</span>
-                    </div>
-                    <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
-                      SOTA Band-Split RoFormer. Extreme precision with near-zero acoustic bleed. Isolates speech while preserving voice resonance.
-                    </p>
-                    <div className="text-[10px] text-blue-700 font-mono mt-1">
-                      <strong>Ideal Use Case:</strong> Video podcasts, interviews with intro music, voice-overs.
-                    </div>
-                  </div>
-                )}
-
-                {model === 'melband-roformer' && (
-                  <div>
-                    <div className="font-semibold text-zerodha-heading text-[11px] flex items-center space-x-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                      <span>Best for: Studio HD Master Audio (44.1/48kHz)</span>
-                    </div>
-                    <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
-                      Mel-frequency scale architecture designed specifically for high-sample-rate audio. Preserves delicate high-frequency air and vocal harmonics without artificial artifacts.
-                    </p>
-                    <div className="text-[10px] text-emerald-800 font-mono mt-1">
-                      <strong>Ideal Use Case:</strong> Broadcast mastering, acoustic field recordings, documentary audio.
-                    </div>
-                  </div>
-                )}
-
-                {model === 'htdemucs-v4' && (
-                  <div>
-                    <div className="font-semibold text-zerodha-heading text-[11px] flex items-center space-x-1">
-                      <span className="w-2 h-2 rounded-full bg-purple-600" />
-                      <span>Best for: Heavy Multi-Source Noise &amp; Crowds</span>
-                    </div>
-                    <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
-                      Hybrid Transformer Demucs by Meta AI. Separates up to 6 distinct acoustic layers (speech, crowd, traffic, ambient room tone, industrial hum).
-                    </p>
-                    <div className="text-[10px] text-purple-800 font-mono mt-1">
-                      <strong>Ideal Use Case:</strong> Outdoor vlog recordings, busy market conventions, live events.
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zerodha-heading mb-1 flex items-center space-x-1">
-                <Sparkles className="w-3.5 h-3.5 text-zerodha-green" />
+              <label className="block text-xs font-mono text-[#9FA4B8] uppercase tracking-wider font-semibold mb-1 flex items-center space-x-1">
+                <Sparkles className="w-3.5 h-3.5 text-[#27A376]" />
                 <span>Speech Enhancement</span>
               </label>
-              <div className="flex items-center space-x-2 mt-2">
+              <div className="flex items-center space-x-2 mt-2 bg-[#12131C] p-2 rounded-xl border border-white/[0.08]">
                 <input
                   type="checkbox"
                   id="deepfilter"
                   checked={deepFilter}
                   onChange={(e) => setDeepFilter(e.target.checked)}
-                  className="rounded border-gray-300 text-zerodha-blue focus:ring-0 w-4 h-4"
+                  className="rounded border-white/[0.2] bg-[#181926] text-[#FF4D36] focus:ring-0 w-4 h-4 accent-[#FF4D36]"
                 />
-                <label htmlFor="deepfilter" className="text-xs text-zerodha-text cursor-pointer">
+                <label htmlFor="deepfilter" className="text-xs text-[#F3F4F8] cursor-pointer font-mono">
                   DeepFilterNet3 Cleaning
                 </label>
               </div>
@@ -337,24 +298,24 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-5 pt-3 border-t border-zerodha-border flex items-center justify-between">
+        <div className="mt-6 pt-4 border-t border-white/[0.08] flex items-center justify-between">
           {isProcessing ? (
             <div className="w-full flex items-center space-x-2.5">
-              <div className="w-3.5 h-3.5 border-2 border-zerodha-blue border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs text-zerodha-blue font-mono">{progressStep}</span>
+              <div className="w-4 h-4 border-2 border-[#FF4D36] border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-[#FF7A59] font-mono">{progressStep}</span>
             </div>
           ) : (
             <>
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-zerodha-muted hover:text-zerodha-heading transition-colors"
+                className="px-4 py-2 text-xs font-medium text-[#9FA4B8] hover:text-white transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleStartIngestion}
                 disabled={tab === 'upload' ? !file : !youtubeUrl}
-                className="px-5 py-2 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover disabled:opacity-50 text-white text-xs font-medium shadow-sm transition-all"
+                className="btn-coral px-5 py-2.5 rounded-xl disabled:opacity-50 text-white text-xs font-semibold shadow-[0_4px_20px_rgba(255,77,54,0.35)] transition-all"
               >
                 Start Separation Pipeline
               </button>

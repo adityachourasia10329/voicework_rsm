@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal } from 'lucide-react';
+import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal, Cpu, Activity } from 'lucide-react';
 
 interface NavbarProps {
   onOpenIngest?: () => void;
@@ -30,48 +30,53 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-zerodha-border shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-[#0D0E15]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand / Logo - Zerodha style */}
+        
+        {/* Brand / Logo with Futuristic Superlist Accent */}
         <Link href="/" className="flex items-center space-x-3 group">
-          <div className="w-8 h-8 rounded bg-zerodha-blue flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            <Waves className="w-4 h-4" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF4D36] via-[#FF5DB1] to-[#6B70F0] p-[1.5px] shadow-[0_0_20px_rgba(255,77,54,0.35)] group-hover:shadow-[0_0_28px_rgba(255,77,54,0.5)] transition-all">
+            <div className="w-full h-full bg-[#12131C] rounded-[10px] flex items-center justify-center text-[#FF4D36] group-hover:text-white transition-colors">
+              <Waves className="w-4 h-4" />
+            </div>
           </div>
           <div className="flex items-baseline space-x-2">
-            <span className="font-semibold text-base tracking-tight text-zerodha-heading">VoiceWork</span>
-            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-gray-100 text-zerodha-muted font-medium border border-gray-200">
+            <span className="font-heading font-bold text-lg tracking-tight text-white group-hover:text-[#FF7A59] transition-colors">
+              VoiceWork
+            </span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-[#9FA4B8] border border-white/[0.1] font-semibold tracking-wider">
               RSM
             </span>
           </div>
         </Link>
 
-        {/* Center Links: Dashboard, Gallery, and Editor Option right beside each other */}
-        <div className="flex items-center space-x-8 text-sm">
-          <div className="flex items-center space-x-6">
+        {/* Center Futuristic Pill Navigation */}
+        <div className="flex items-center space-x-6">
+          <nav className="flex items-center p-1 rounded-full bg-[#161726]/80 border border-white/[0.08] backdrop-blur-md shadow-inner">
             <button
               onClick={() => handleNavClick('dashboard')}
-              className={`pb-1 flex items-center space-x-1.5 border-b-2 font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'dashboard'
-                  ? 'text-zerodha-blue border-zerodha-blue font-semibold'
-                  : 'text-zerodha-muted border-transparent hover:text-zerodha-heading'
+                  ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white shadow-[0_0_15px_rgba(255,77,54,0.4)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
+              <LayoutDashboard className="w-3.5 h-3.5" />
               <span>Dashboard</span>
             </button>
 
             <button
               onClick={() => handleNavClick('gallery')}
-              className={`pb-1 flex items-center space-x-1.5 border-b-2 font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'gallery'
-                  ? 'text-zerodha-blue border-zerodha-blue font-semibold'
-                  : 'text-zerodha-muted border-transparent hover:text-zerodha-heading'
+                  ? 'bg-[#6B70F0] text-white shadow-[0_0_15px_rgba(107,112,240,0.4)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
-              <FolderKanban className="w-4 h-4" />
+              <FolderKanban className="w-3.5 h-3.5" />
               <span>Gallery</span>
               {projectCount !== undefined && (
-                <span className="text-[11px] font-mono px-1.5 py-0.2 rounded-full bg-blue-50 text-zerodha-blue border border-blue-200 font-semibold">
+                <span className="ml-1 text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-white/20 text-white font-bold">
                   {projectCount}
                 </span>
               )}
@@ -79,55 +84,53 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => handleNavClick('editor')}
-              className={`pb-1 flex items-center space-x-1.5 border-b-2 font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'editor'
-                  ? 'text-zerodha-blue border-zerodha-blue font-semibold'
-                  : 'text-zerodha-muted border-transparent hover:text-zerodha-heading'
+                  ? 'bg-gradient-to-r from-[#6B70F0] to-[#FF5DB1] text-white shadow-[0_0_15px_rgba(255,93,177,0.4)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
               }`}
               title="Open Editor Space"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-3.5 h-3.5" />
               <span>Editor</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200 font-semibold">
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-[#FF4D36]/20 text-[#FF7A59] border border-[#FF4D36]/30 font-bold uppercase">
                 Studio
               </span>
             </button>
-          </div>
+          </nav>
 
-          <span className="hidden md:inline text-gray-300">|</span>
-
-          {/* Real-time Architecture Status Indicators */}
-          <div className="hidden lg:flex items-center space-x-6 text-xs font-mono">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-zerodha-green" />
-              <span className="text-gray-500">Redis Tier 1:</span>
-              <span className="text-zerodha-green font-semibold">&lt; 3ms</span>
+          {/* Real-time Architecture Status Indicator (bpssite telemetry style) */}
+          <div className="hidden lg:flex items-center space-x-4 pl-2">
+            <div className="status-indicator-box">
+              <span className="status-dot-pulse" />
+              <span>TIER 1 HOT CACHE &lt; 3ms</span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-500">
-              <span>Lossless Engine:</span>
-              <span className="font-semibold text-gray-700">FFmpeg -c:v copy</span>
+            
+            <div className="flex items-center space-x-1.5 text-[11px] font-mono text-[#9FA4B8] bg-white/[0.03] px-2.5 py-1 rounded-full border border-white/[0.06]">
+              <Cpu className="w-3 h-3 text-[#258BF5]" />
+              <span>BS-RoFormer v2</span>
             </div>
           </div>
         </div>
 
-        {/* Right CTA */}
+        {/* Right CTA - Superlist Coral Button with Glow */}
         <div className="flex items-center space-x-3">
           {onOpenIngest && (
             <button
               onClick={onOpenIngest}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white font-medium text-xs shadow-sm transition-all"
+              className="btn-coral px-4 py-2 rounded-xl font-medium text-xs flex items-center space-x-1.5 shadow-[0_4px_20px_rgba(255,77,54,0.35)] hover:shadow-[0_6px_28px_rgba(255,77,54,0.5)] transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>Ingest Media</span>
+              <span className="font-semibold tracking-wide">Ingest Media</span>
             </button>
           )}
 
           <button
             onClick={() => handleNavClick('gallery')}
-            className={`p-2 rounded border transition-colors ${
+            className={`p-2 rounded-xl border transition-all ${
               activeTab === 'gallery'
-                ? 'border-zerodha-blue bg-blue-50 text-zerodha-blue'
-                : 'border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-muted hover:text-zerodha-heading'
+                ? 'border-[#6B70F0] bg-[#6B70F0]/15 text-white shadow-[0_0_12px_rgba(107,112,240,0.3)]'
+                : 'border-white/[0.08] bg-[#161726]/60 hover:bg-white/[0.06] text-[#9FA4B8] hover:text-white'
             }`}
             title="Projects Gallery"
           >
@@ -138,4 +141,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-

@@ -17,7 +17,11 @@ import {
   CheckCircle2,
   Cpu,
   Layers,
-  FileAudio
+  FileAudio,
+  Activity,
+  Zap,
+  Radio,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -56,7 +60,7 @@ export default function HomePage() {
 
   const handleProjectCreated = (newProject: ProjectState) => {
     setProjects([newProject, ...projects]);
-    setActiveTab('gallery'); // Jump directly to gallery to see the new project
+    setActiveTab('gallery');
   };
 
   const handleQuickYoutubeIngest = (e: React.FormEvent) => {
@@ -66,7 +70,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-zerodha-bg">
+    <div className="min-h-screen text-[#F3F4F8] font-sans">
       <Navbar
         onOpenIngest={() => setIsIngestOpen(true)}
         activeTab={activeTab}
@@ -74,183 +78,247 @@ export default function HomePage() {
         projectCount={projects.length}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
         {activeTab === 'dashboard' ? (
           /* ============================================================ */
-          /* DASHBOARD VIEW (Clean Zerodha Workstation & Quick Launch)    */
+          /* DASHBOARD VIEW (Futuristic Workstation & Superlist Hero)     */
           /* ============================================================ */
-          <div className="space-y-8 max-w-5xl mx-auto">
-            {/* Zerodha Style Clean Hero Section */}
-            <div className="text-center max-w-3xl mx-auto pt-4 pb-2">
-              <h1 className="text-3xl sm:text-4xl font-semibold text-zerodha-heading tracking-tight leading-tight">
-                High-fidelity audio separation &amp; video remuxing
+          <div className="space-y-10 max-w-5xl mx-auto">
+            {/* Grounded Futuristic Hero Section (Superlist Style) */}
+            <div className="text-center max-w-3xl mx-auto pt-6 pb-4">
+              
+              {/* Telemetry Badge */}
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.1] text-xs font-mono text-[#9FA4B8] mb-5 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-[#27A376] shadow-[0_0_8px_#27A376]" />
+                <span className="text-white font-medium">NEURAL SEPARATION ENGINE v2.0</span>
+                <span className="text-[#646982]">•</span>
+                <span className="text-[#FF7A59]">SUB-3MS HOT STORE</span>
+              </div>
+
+              {/* Headline with Superpower Gradient (Attached Photo 2) */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-white leading-[1.1]">
+                Audio Separation with{' '}
+                <span className="text-superpower drop-shadow-[0_0_35px_rgba(255,77,54,0.35)]">
+                  Superpowers
+                </span>
               </h1>
-              <p className="mt-3 text-sm sm:text-base text-zerodha-muted leading-relaxed">
-                Enterprise neural stem isolation powered by BS-RoFormer &amp; DeepFilterNet3.
-                Extract pristine speech, eliminate acoustic noise, and remux master video without stream re-encoding.
+
+              <p className="mt-4 text-base sm:text-lg text-[#9FA4B8] leading-relaxed max-w-2xl mx-auto">
+                Next-generation stem demixing powered by BS-RoFormer &amp; DeepFilterNet3. 
+                Surgical visual spectrogram editing and zero-loss video remuxing without stream re-encoding.
               </p>
 
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {/* Action Buttons in Superlist Palette */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
                 <button
                   onClick={() => setIsIngestOpen(true)}
-                  className="px-6 py-2.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-sm font-medium shadow-sm transition-all flex items-center space-x-2"
+                  className="btn-coral px-6 py-3 rounded-xl font-semibold text-sm flex items-center space-x-2 shadow-[0_4px_24px_rgba(255,77,54,0.4)] hover:shadow-[0_8px_32px_rgba(255,77,54,0.6)] transition-all"
                 >
                   <UploadCloud className="w-4 h-4" />
-                  <span>Ingest new media</span>
+                  <span>Ingest New Media</span>
+                  <ArrowRight className="w-4 h-4 ml-0.5 opacity-80" />
                 </button>
+
                 <button
                   onClick={() => handleTabChange('gallery')}
-                  className="px-6 py-2.5 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-zerodha-text text-sm font-medium transition-all flex items-center space-x-2"
+                  className="glass-panel px-6 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/[0.08] hover:border-white/[0.2] transition-all flex items-center space-x-2"
                 >
-                  <FolderKanban className="w-4 h-4 text-zerodha-blue" />
-                  <span>Open Projects Gallery ({projects.length})</span>
+                  <FolderKanban className="w-4 h-4 text-[#6B70F0]" />
+                  <span>Projects Gallery ({projects.length})</span>
                 </button>
+
                 <button
                   onClick={() => handleTabChange('editor')}
-                  className="px-6 py-2.5 rounded border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-900 text-sm font-medium transition-all flex items-center space-x-2"
+                  className="btn-purple px-6 py-3 rounded-xl text-sm font-semibold text-white flex items-center space-x-2 shadow-[0_4px_24px_rgba(107,112,240,0.35)] hover:shadow-[0_8px_32px_rgba(107,112,240,0.55)] transition-all"
                 >
-                  <Sliders className="w-4 h-4 text-purple-600" />
-                  <span>Launch Editor Mode</span>
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>Launch Studio Editor</span>
                 </button>
               </div>
             </div>
 
-            {/* Ingestion & Workstation Launchpad Grid */}
+            {/* Ingestion & Workstation Launchpad Grid (Futuristic Glass Cards) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Card 1: Direct File Ingestion */}
-              <div className="bg-white p-6 rounded border border-zerodha-border shadow-sm flex flex-col justify-between">
+              
+              {/* Card 1: Direct File Ingestion (Coral Border Glow) */}
+              <div className="glass-panel-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF4D36]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#FF4D36]/20 transition-all" />
+                
                 <div>
-                  <div className="flex items-center space-x-2 text-zerodha-blue mb-2">
-                    <UploadCloud className="w-5 h-5" />
-                    <h3 className="text-sm font-semibold text-zerodha-heading">Direct Media Upload</h3>
+                  <div className="flex items-center space-x-2.5 text-[#FF7A59] mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#FF4D36]/15 border border-[#FF4D36]/30 flex items-center justify-center text-[#FF4D36]">
+                      <UploadCloud className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-heading font-bold text-white">Direct Media Upload</h3>
+                      <span className="text-[10px] font-mono text-[#9FA4B8] tracking-wider uppercase">Lossless Demuxing Engine</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-zerodha-muted leading-relaxed">
-                    Upload arbitrary length video or audio files. Zero-loss PCM extraction with automated 60s chunking guard against OOM.
+
+                  <p className="text-xs sm:text-sm text-[#9FA4B8] leading-relaxed">
+                    Upload arbitrary length video or audio files. Zero-loss PCM 16-bit 44.1kHz audio extraction with automated 60s chunking guard against OOM.
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+
+                  <div className="flex flex-wrap gap-1.5 mt-4">
                     {['MP4', 'MOV', 'MKV', 'WAV', 'FLAC', 'MP3'].map((ext) => (
-                      <span key={ext} className="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">
+                      <span
+                        key={ext}
+                        className="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/[0.04] text-[#E0E2EC] border border-white/[0.08]"
+                      >
                         {ext}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-xs text-zerodha-muted font-mono">Max size: Unlimited</span>
+                <div className="mt-8 pt-4 border-t border-white/[0.06] flex items-center justify-between">
+                  <span className="text-xs text-[#9FA4B8] font-mono">Max size: Unlimited &bull; 60s Crossfade</span>
                   <button
                     onClick={() => setIsIngestOpen(true)}
-                    className="px-4 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium transition-colors"
+                    className="btn-coral px-4 py-2 rounded-xl text-xs font-semibold"
                   >
                     Select File
                   </button>
                 </div>
               </div>
 
-              {/* Card 2: Remote YouTube Stream Ingestion */}
-              <div className="bg-white p-6 rounded border border-zerodha-border shadow-sm flex flex-col justify-between">
+              {/* Card 2: Remote YouTube Stream Ingestion (Purple/Pink Glow) */}
+              <div className="glass-panel-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#6B70F0]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#6B70F0]/20 transition-all" />
+
                 <div>
-                  <div className="flex items-center space-x-2 text-red-600 mb-2">
-                    <Youtube className="w-5 h-5" />
-                    <h3 className="text-sm font-semibold text-zerodha-heading">YouTube Stream Extractor</h3>
+                  <div className="flex items-center space-x-2.5 text-[#6B70F0] mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#6B70F0]/15 border border-[#6B70F0]/30 flex items-center justify-center text-[#6B70F0]">
+                      <Youtube className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-heading font-bold text-white">YouTube Stream Extractor</h3>
+                      <span className="text-[10px] font-mono text-[#9FA4B8] tracking-wider uppercase">Headless yt-dlp Core</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-zerodha-muted leading-relaxed">
-                    Ingest podcasts, interviews, or lectures directly from YouTube. Lossless demuxing via <code className="text-gray-800 font-mono">yt-dlp</code>.
+
+                  <p className="text-xs sm:text-sm text-[#9FA4B8] leading-relaxed">
+                    Ingest podcasts, interviews, or lectures directly from YouTube. Stream demuxing at full fidelity with synchronized audio metadata.
                   </p>
+
                   <form onSubmit={handleQuickYoutubeIngest} className="mt-4 flex gap-2">
                     <input
                       type="url"
                       placeholder="https://www.youtube.com/watch?v=..."
                       value={ytUrl}
                       onChange={(e) => setYtUrl(e.target.value)}
-                      className="flex-1 px-3 py-1.5 text-xs rounded border border-zerodha-border bg-gray-50 focus:bg-white text-zerodha-heading focus:outline-none focus:border-zerodha-blue font-mono"
+                      className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-white/[0.1] bg-[#12131C] text-white placeholder-[#646982] focus:outline-none focus:border-[#6B70F0] focus:ring-1 focus:ring-[#6B70F0] font-mono transition-all"
                     />
                     <button
                       type="submit"
-                      className="px-3 py-1.5 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium transition-colors"
+                      className="btn-purple px-4 py-2 rounded-xl text-xs font-semibold"
                     >
                       Extract
                     </button>
                   </form>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-zerodha-muted font-mono">
-                  <span>Stream Demux: 44.1kHz / 16-bit PCM</span>
-                  <span className="text-zerodha-green font-semibold">&bull; Online</span>
+                <div className="mt-8 pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
+                  <span className="text-[#9FA4B8]">Stream Demux: 44.1kHz PCM</span>
+                  <div className="flex items-center space-x-1.5 text-[#27A376]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#27A376] shadow-[0_0_6px_#27A376]" />
+                    <span className="font-semibold text-[11px]">ONLINE</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Active Projects Quick Access Banner */}
-            <div className="bg-white p-6 rounded border border-zerodha-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Active Projects Quick Access Banner (Superlist Purple/Indigo theme) */}
+            <div className="glass-panel-elevated p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative overflow-hidden">
+              <div className="absolute -left-10 top-0 bottom-0 w-24 bg-gradient-to-r from-[#6B70F0]/20 to-transparent pointer-events-none" />
+              
               <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 rounded bg-blue-50 border border-blue-200 flex items-center justify-center text-zerodha-blue">
-                  <FolderKanban className="w-5 h-5" />
+                <div className="w-12 h-12 rounded-xl bg-[#6B70F0]/15 border border-[#6B70F0]/30 flex items-center justify-center text-[#6B70F0] shadow-[0_0_15px_rgba(107,112,240,0.25)] flex-shrink-0">
+                  <FolderKanban className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-zerodha-heading">
-                    {projects.length} Projects in Hot Cache Repository
+                  <h4 className="text-base font-heading font-bold text-white">
+                    {projects.length} Workspaces in Hot Cache Repository
                   </h4>
-                  <p className="text-xs text-zerodha-muted mt-0.5">
-                    Multi-stem isolated sessions ready for spectrogram frequency inspection and video remuxing.
+                  <p className="text-xs text-[#9FA4B8] mt-0.5 max-w-xl">
+                    Multi-stem isolated sessions ready for spectrogram frequency inspection, surgical time-bracket flagging, and video remuxing.
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => handleTabChange('gallery')}
-                className="px-5 py-2 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all flex items-center justify-center space-x-1.5 flex-shrink-0"
+                className="btn-purple px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 flex-shrink-0"
               >
                 <span>View in Gallery</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Clean Pipeline Architecture Specs Strip */}
-            <div className="bg-white rounded border border-zerodha-border p-5 shadow-sm">
-              <div className="text-xs font-semibold text-zerodha-heading uppercase tracking-wider mb-3">
-                Core Engine Specifications
+            {/* Core Pipeline Architecture Specs Strip (bpssite Industrial style) */}
+            <div className="glass-panel rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.08]">
+                <div className="text-xs font-mono font-bold text-[#9FA4B8] uppercase tracking-wider flex items-center space-x-2">
+                  <Cpu className="w-3.5 h-3.5 text-[#258BF5]" />
+                  <span>Core Engine Specifications &bull; Architectural Modules</span>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.05] text-[#27A376] border border-[#27A376]/30 font-semibold">
+                  SOTA BENCHMARKS VERIFIED
+                </span>
               </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                <div className="p-3 rounded bg-gray-50 border border-gray-100">
-                  <div className="font-semibold text-zerodha-heading">FFmpeg Stream Copy</div>
-                  <div className="text-zerodha-muted mt-1 font-mono text-[11px]">
-                    Zero quality loss video remuxing via <code className="text-gray-800">-c:v copy</code>. Video streams untouched.
+                
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-[#FF4D36]/30 transition-colors">
+                  <div className="font-heading font-bold text-white text-sm flex items-center space-x-2">
+                    <span className="w-2 h-2 rounded-full bg-[#FF4D36]" />
+                    <span>FFmpeg Stream Copy</span>
+                  </div>
+                  <div className="text-[#9FA4B8] mt-2 font-mono text-[11px] leading-relaxed">
+                    Zero quality loss video remuxing via <code className="text-white font-semibold">-c:v copy</code>. Video streams untouched and bit-identical.
                   </div>
                 </div>
 
-                <div className="p-3 rounded bg-gray-50 border border-gray-100">
-                  <div className="font-semibold text-zerodha-heading">OOM Chunking Guard</div>
-                  <div className="text-zerodha-muted mt-1 font-mono text-[11px]">
-                    60s sliding windows with 2.0s crossfading. Smooth phase stitching with no boundary clicks.
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-[#6B70F0]/30 transition-colors">
+                  <div className="font-heading font-bold text-white text-sm flex items-center space-x-2">
+                    <span className="w-2 h-2 rounded-full bg-[#6B70F0]" />
+                    <span>OOM Chunking Guard</span>
+                  </div>
+                  <div className="text-[#9FA4B8] mt-2 font-mono text-[11px] leading-relaxed">
+                    60s sliding windows with 2.0s crossfades. Smooth phase stitching preventing GPU memory overflow on 2h+ master files.
                   </div>
                 </div>
 
-                <div className="p-3 rounded bg-gray-50 border border-gray-100">
-                  <div className="font-semibold text-zerodha-heading">Multi-Band Frequency Waves</div>
-                  <div className="text-zerodha-muted mt-1 font-mono text-[11px]">
-                    Decomposed audio waves across identified frequency spectrums with surgical micro-inference.
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-[#27A376]/30 transition-colors">
+                  <div className="font-heading font-bold text-white text-sm flex items-center space-x-2">
+                    <span className="w-2 h-2 rounded-full bg-[#27A376]" />
+                    <span>Surgical Patching</span>
+                  </div>
+                  <div className="text-[#9FA4B8] mt-2 font-mono text-[11px] leading-relaxed">
+                    Diagnostic time-bracket micro-inference. Re-evaluates only targeted intervals without re-rendering entire tracks.
                   </div>
                 </div>
+
               </div>
             </div>
+
           </div>
         ) : (
           /* ============================================================ */
-          /* GALLERY VIEW (All Projects Repository & All Panel Visible)   */
+          /* GALLERY VIEW (Projects Repository)                           */
           /* ============================================================ */
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center justify-between pb-2">
               <div>
-                <h1 className="text-2xl font-semibold text-zerodha-heading tracking-tight">Projects Gallery</h1>
-                <p className="text-xs text-zerodha-muted mt-0.5">
-                  Browse and launch all active multi-stem project repositories and editor sessions.
+                <h1 className="text-3xl font-heading font-bold text-white tracking-tight">Projects Gallery</h1>
+                <p className="text-xs text-[#9FA4B8] mt-1 font-mono">
+                  Browse and launch all active multi-stem project repositories and editor sessions synced with Redis Hot Cache.
                 </p>
               </div>
 
               <button
                 onClick={() => setIsIngestOpen(true)}
-                className="px-4 py-2 rounded bg-zerodha-blue hover:bg-zerodha-blue-hover text-white text-xs font-medium shadow-sm transition-all flex items-center space-x-1.5"
+                className="btn-coral px-4 py-2.5 rounded-xl text-xs font-semibold shadow-[0_4px_20px_rgba(255,77,54,0.35)] flex items-center space-x-2"
               >
                 <UploadCloud className="w-4 h-4" />
                 <span>Ingest Media</span>
@@ -274,4 +342,3 @@ export default function HomePage() {
     </div>
   );
 }
-

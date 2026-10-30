@@ -48,7 +48,7 @@ export const IDENTIFIED_BANDS: IdentifiedFrequencyBand[] = [
     maxHz: 250,
     identifiedPeakHz: 68,
     wavelengthMeters: 5.06,
-    color: '#ef4444',
+    color: '#FF4D36', // Superlist Coral
     sourceType: 'Traffic / HVAC Rumble',
     displayCycles: 1.5,
     description: 'Deep sinusoidal rumble, vehicular road resonance, and sub-acoustic floor vibrations.',
@@ -62,7 +62,7 @@ export const IDENTIFIED_BANDS: IdentifiedFrequencyBand[] = [
     maxHz: 1000,
     identifiedPeakHz: 380,
     wavelengthMeters: 0.90,
-    color: '#10b981',
+    color: '#27A376', // Superlist Emerald
     sourceType: 'Speech Fundamental / Chest Resonance',
     displayCycles: 3.5,
     description: 'Human vocal cords fundamental frequency (F₀), vocal body warmth, and dialogue cadence.',
@@ -76,7 +76,7 @@ export const IDENTIFIED_BANDS: IdentifiedFrequencyBand[] = [
     maxHz: 4000,
     identifiedPeakHz: 2450,
     wavelengthMeters: 0.14,
-    color: '#387ed1',
+    color: '#258BF5', // Superlist Blue
     sourceType: 'Speech Clarity & Consonants',
     displayCycles: 7.0,
     description: 'Intelligibility formant zone (vowels, consonant articulation, dialogue clarity).',
@@ -90,7 +90,7 @@ export const IDENTIFIED_BANDS: IdentifiedFrequencyBand[] = [
     maxHz: 8000,
     identifiedPeakHz: 6100,
     wavelengthMeters: 0.056,
-    color: '#f59e0b',
+    color: '#FF5DB1', // Superlist Pink
     sourceType: 'Fricative "S"/"Sh" & Transient Attacks',
     displayCycles: 12.0,
     description: 'High-frequency dental and palatal fricatives, percussion clicks, and edge articulation.',
@@ -104,7 +104,7 @@ export const IDENTIFIED_BANDS: IdentifiedFrequencyBand[] = [
     maxHz: 20000,
     identifiedPeakHz: 14200,
     wavelengthMeters: 0.024,
-    color: '#8b5cf6',
+    color: '#6B70F0', // Superlist Purple
     sourceType: 'Ambient Air / Mic Noise Floor',
     displayCycles: 20.0,
     description: 'Micro-vibrational acoustic air, preamp thermal noise, and tape shimmer tail.',
@@ -989,19 +989,19 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
           {/* Rewind -5s */}
           <button
             onClick={() => onSeek(Math.max(0, currentTime - 5))}
-            className="p-1 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-gray-600 transition-colors"
+            className="p-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
             title="Rewind 5 seconds"
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
           {/* Fast Forward +5s */}
           <button
             onClick={() => onSeek(Math.min(duration, currentTime + 5))}
-            className="p-1 rounded border border-zerodha-border bg-white hover:bg-gray-50 text-gray-600 transition-colors"
+            className="p-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-[#9FA4B8] hover:text-white transition-colors"
             title="Forward 5 seconds"
           >
-            <RotateCw className="w-3 h-3" />
+            <RotateCw className="w-3.5 h-3.5" />
           </button>
 
           <FlyingBox
@@ -1011,19 +1011,19 @@ const FrequencyWaveTrackWithAudio: React.FC<FrequencyWaveTrackWithAudioProps> = 
         </div>
 
         {/* Speed Selector Buttons */}
-        <div className="flex items-center space-x-1 text-[10px]">
-          <span className="text-gray-500 mr-1 flex items-center space-x-1">
-            <Gauge className="w-3 h-3 text-gray-400" />
+        <div className="flex items-center space-x-1 text-[10px] font-mono">
+          <span className="text-[#9FA4B8] mr-1 flex items-center space-x-1">
+            <Gauge className="w-3 h-3 text-[#646982]" />
             <span>Speed:</span>
           </span>
           {speeds.map((spd) => (
             <button
               key={spd}
               onClick={() => onChangeSpeed(spd)}
-              className={`px-1.5 py-0.5 rounded transition-all ${
+              className={`px-2 py-0.5 rounded-md transition-all ${
                 playbackSpeed === spd
-                  ? 'bg-zerodha-blue text-white font-bold'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-[#FF4D36] text-white font-bold shadow-[0_0_10px_rgba(255,77,54,0.4)]'
+                  : 'bg-white/[0.05] text-[#9FA4B8] hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               {spd}x
