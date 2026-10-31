@@ -145,3 +145,29 @@ export interface TranscriptSegment {
   speaker?: string;
   text: string;
 }
+
+export interface RSMChannelVideo {
+  id: string;
+  code: string; // 5-character alphanumeric uppercase ID (e.g. '7K9Q2')
+  youtubeId: string;
+  title: string;
+  durationSeconds: number;
+  durationFormatted: string;
+  clipsCount: number;
+  clips: Array<{
+    clip_id: string;
+    title: string;
+    start_time: number;
+    end_time: number;
+    viral_score: number;
+    timeRange: string;
+  }>;
+  youtubeUrl: string; // Actual YouTube watch URL
+  channelUrl: string; // https://www.youtube.com/@rsmglobalsatsang
+  thumbnailUrl: string;
+  publishedAt: string;
+  category: string;
+  status: 'READY' | 'SYNCED';
+  viralityScore: number;
+}
+

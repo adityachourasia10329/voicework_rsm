@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Navbar } from '../components/Navbar';
+import { Navbar, NavTab } from '../components/Navbar';
 import { ProjectGallery } from '../components/ProjectGallery';
+import { OurChannelView } from '../components/OurChannelView';
 import { IngestionModal } from '../components/IngestionModal';
 import { INITIAL_PROJECTS } from '../lib/mockData';
 import { ProjectState } from '../lib/types';
@@ -23,24 +24,16 @@ import {
   Zap,
   Radio,
   SlidersHorizontal,
-  Search,
-  X,
   Clock,
   Play,
-  Filter,
   LayoutDashboard
 } from 'lucide-react';
 
 export default function HomePage() {
   const [projects, setProjects] = useState<ProjectState[]>(INITIAL_PROJECTS);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'gallery' | 'editor'>('dashboard');
+  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isIngestOpen, setIsIngestOpen] = useState(false);
   const [ytUrl, setYtUrl] = useState('');
-
-  // Global Top-Level Search & Filter State (above dashboard & gallery)
-  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [activeStemFilter, setActiveStemFilter] = useState<'ALL' | 'SPEECH' | 'TRAFFIC' | 'CROWD' | 'MUSIC'>('ALL');
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Sync tab with URL search parameter if present
   useEffect(() => {
@@ -51,25 +44,15 @@ export default function HomePage() {
         setActiveTab('gallery');
       } else if (tabParam === 'dashboard') {
         setActiveTab('dashboard');
+      } else if (tabParam === 'channel') {
+        setActiveTab('channel');
       } else if (tabParam === 'editor') {
         window.location.href = '/editor';
       }
     }
   }, []);
 
-  // Keyboard shortcut for quick search focus (Ctrl+K / Cmd+K)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const handleTabChange = (tab: 'dashboard' | 'gallery' | 'editor') => {
+  const handleTabChange = (tab: NavTab) => {
     if (tab === 'editor') {
       window.location.href = '/editor';
       return;
@@ -93,40 +76,6 @@ export default function HomePage() {
     setIsIngestOpen(true);
   };
 
-  // Filter projects by global search query across code, title, transcripts, and stems
-  const filteredProjects = useMemo(() => {
-    return projects.filter((p) => {
-      const q = globalSearchQuery.toLowerCase().trim();
-      const qUpper = globalSearchQuery.toUpperCase().trim();
-      
-      const matchesText =
-        !q ||
-        p.title.toLowerCase().includes(q) ||
-        (p.code && p.code.toUpperCase().includes(qUpper)) ||
-        (p.youtubeId && p.youtubeId.toLowerCase().includes(q)) ||
-        (p.transcript && p.transcript.toLowerCase().includes(q)) ||
-        p.sourceType.toLowerCase().includes(q) ||
-        p.stems.some((s) => s.label.toLowerCase().includes(q) || s.type.toLowerCase().includes(q));
-
-      const matchesStem =
-        activeStemFilter === 'ALL' ||
-        (activeStemFilter === 'SPEECH' && p.stems.some((s) => s.type.includes('SPEECH'))) ||
-        (activeStemFilter === 'TRAFFIC' && p.stems.some((s) => s.type.includes('TRAFFIC'))) ||
-        (activeStemFilter === 'CROWD' && p.stems.some((s) => s.type.includes('CROWD'))) ||
-        (activeStemFilter === 'MUSIC' && p.stems.some((s) => s.type.includes('MUSIC')));
-
-      return matchesText && matchesStem;
-    });
-  }, [projects, globalSearchQuery, activeStemFilter]);
-
-  // Direct 5-character code match detection
-  const exactCodeMatch = useMemo(() => {
-    const qCode = globalSearchQuery.trim().toUpperCase();
-    if (qCode.length < 3) return null;
-    return projects.find((p) => p.code && p.code.toUpperCase() === qCode) || null;
-  }, [projects, globalSearchQuery]);
-
-
   return (
     <div className="min-h-screen text-[#F3F4F8] font-sans">
       <Navbar
@@ -134,210 +83,18 @@ export default function HomePage() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         projectCount={projects.length}
-        searchQuery={globalSearchQuery}
-        onSearchChange={setGlobalSearchQuery}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
         
         {/* ============================================================ */}
-        {/* 1. GLOBAL SEARCH BAR (ABOVE THE GALLERY & DASHBOARD LEVEL)   */}
-        {/* ============================================================ */}
-        <section className="mb-6 relative z-30" aria-label="Global Workspace Search">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <div className="flex items-center space-x-2 text-xs font-mono text-[#9FA4B8]">
-              <div className="w-2 h-2 rounded-full bg-[#FF4D36] animate-pulse shadow-[0_0_8px_#FF4D36]" />
-              <span className="font-semibold uppercase tracking-wider text-white">Workspace Search</span>
-              <span className="text-[#646982]">&bull;</span>
-              <span className="text-[11px] text-[#9FA4B8] hidden sm:inline">Search across all stems, sessions &amp; models</span>
-            </div>
-            <div className="flex items-center space-x-1.5 text-[10px] font-mono text-[#646982]">
-              <span className="hidden sm:inline">Quick Jump:</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-[#9FA4B8] border border-white/[0.1]">Ctrl+K</kbd>
-            </div>
-          </div>
-
-          <div className="glass-panel rounded-2xl p-2.5 sm:p-3 border border-white/[0.08] shadow-2xl transition-all focus-within:border-[#FF4D36]/60 focus-within:shadow-[0_0_30px_rgba(255,77,54,0.2)]">
-            <div className="flex flex-col md:flex-row md:items-center gap-2.5">
-              
-              {/* Search Input Container */}
-              <div className="relative flex-1 flex items-center">
-                <div className="w-10 h-10 rounded-xl bg-[#FF4D36]/15 border border-[#FF4D36]/30 flex items-center justify-center text-[#FF4D36] ml-1 flex-shrink-0 shadow-[0_0_12px_rgba(255,77,54,0.3)]">
-                  <Search className="w-4 h-4" />
-                </div>
-                
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search by 5-char code (e.g. 7K9Q2, B4T81), title, dialogue transcripts, stems, or YouTube ID..."
-                  value={globalSearchQuery}
-                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                  className="w-full bg-transparent pl-3.5 pr-20 py-2.5 text-xs sm:text-sm text-white placeholder-[#646982] focus:outline-none font-sans"
-                />
-
-
-                {/* Clear or Shortcut Pill */}
-                <div className="absolute right-3 flex items-center space-x-1.5">
-                  {globalSearchQuery ? (
-                    <button
-                      onClick={() => setGlobalSearchQuery('')}
-                      className="p-1.5 rounded-lg text-[#9FA4B8] hover:text-white hover:bg-white/[0.08] transition-colors"
-                      title="Clear search"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <kbd className="hidden sm:inline-flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] text-[#9FA4B8] border border-white/[0.1]">
-                      <span>Ctrl</span>
-                      <span>+</span>
-                      <span>K</span>
-                    </kbd>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Stem Filter Chips (Superlist Palette) */}
-              <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0 px-1 border-t md:border-t-0 md:border-l border-white/[0.08] md:pl-3">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#646982] hidden lg:inline mr-1 font-semibold">
-                  Stem:
-                </span>
-                
-                <button
-                  onClick={() => setActiveStemFilter('ALL')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 ${
-                    activeStemFilter === 'ALL'
-                      ? 'bg-white text-[#0D0E15] font-bold shadow-sm'
-                      : 'bg-white/[0.04] text-[#9FA4B8] hover:text-white hover:bg-white/[0.08]'
-                  }`}
-                >
-                  All ({projects.length})
-                </button>
-
-                <button
-                  onClick={() => setActiveStemFilter('SPEECH')}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
-                    activeStemFilter === 'SPEECH'
-                      ? 'bg-[#27A376] text-white font-bold shadow-[0_0_12px_rgba(39,163,118,0.4)]'
-                      : 'bg-[#27A376]/10 text-[#33C287] hover:bg-[#27A376]/20'
-                  }`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#27A376]" />
-                  <span>Speech</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveStemFilter('TRAFFIC')}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
-                    activeStemFilter === 'TRAFFIC'
-                      ? 'bg-[#FF4D36] text-white font-bold shadow-[0_0_12px_rgba(255,77,54,0.4)]'
-                      : 'bg-[#FF4D36]/10 text-[#FF7A59] hover:bg-[#FF4D36]/20'
-                  }`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF4D36]" />
-                  <span>Traffic</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveStemFilter('CROWD')}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
-                    activeStemFilter === 'CROWD'
-                      ? 'bg-[#258BF5] text-white font-bold shadow-[0_0_12px_rgba(37,139,245,0.4)]'
-                      : 'bg-[#258BF5]/10 text-[#429CFF] hover:bg-[#258BF5]/20'
-                  }`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#258BF5]" />
-                  <span>Crowd</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveStemFilter('MUSIC')}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex-shrink-0 flex items-center space-x-1.5 ${
-                    activeStemFilter === 'MUSIC'
-                      ? 'bg-[#6B70F0] text-white font-bold shadow-[0_0_12px_rgba(107,112,240,0.4)]'
-                      : 'bg-[#6B70F0]/10 text-[#8E93FF] hover:bg-[#6B70F0]/20'
-                  }`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#6B70F0]" />
-                  <span>Music</span>
-                </button>
-              </div>
-
-            </div>
-
-            {/* Live Instant Search Matches Dropdown Banner */}
-            {(globalSearchQuery.trim().length > 0 || activeStemFilter !== 'ALL') && (
-              <div className="mt-2.5 pt-2.5 border-t border-white/[0.08] px-2 flex flex-col gap-2.5">
-                {/* 5-Character Code Exact Match Quick Launcher */}
-                {exactCodeMatch && (
-                  <div className="p-2.5 rounded-xl bg-[#FF4D36]/10 border border-[#FF4D36]/30 flex flex-wrap items-center justify-between gap-3 shadow-[0_0_20px_rgba(255,77,54,0.15)] animate-in fade-in duration-200">
-                    <div className="flex items-center space-x-2.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#FF4D36] animate-ping" />
-                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-white">
-                        Code Match:
-                      </span>
-                      <span className="px-2 py-0.5 rounded-lg bg-[#FF4D36]/25 text-[#FF7A59] border border-[#FF4D36]/40 font-mono font-bold text-xs tracking-widest">
-                        #{exactCodeMatch.code}
-                      </span>
-                      <span className="text-xs text-white/90 font-medium truncate max-w-[200px] sm:max-w-xs">
-                        {exactCodeMatch.title}
-                      </span>
-                    </div>
-
-                    <Link
-                      href={`/editor/${exactCodeMatch.code}`}
-                      className="btn-coral px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow-[0_0_12px_rgba(255,77,54,0.4)]"
-                    >
-                      <Sliders className="w-3.5 h-3.5" />
-                      <span>Launch #{exactCodeMatch.code} &rarr;</span>
-                    </Link>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                  <div className="flex items-center space-x-2 text-[#9FA4B8]">
-                    <span>Query result:</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#FF4D36]/15 text-[#FF7A59] font-bold border border-[#FF4D36]/30">
-                      {filteredProjects.length} matching session{filteredProjects.length === 1 ? '' : 's'}
-                    </span>
-                    {globalSearchQuery && (
-                      <span>for &ldquo;<span className="text-white font-semibold">{globalSearchQuery}</span>&rdquo;</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleTabChange('gallery')}
-                      className="text-[#6B70F0] hover:text-[#8E93FF] font-semibold flex items-center space-x-1 transition-colors"
-                    >
-                      <span>View all in Gallery</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setGlobalSearchQuery('');
-                        setActiveStemFilter('ALL');
-                      }}
-                      className="text-[#9FA4B8] hover:text-white transition-colors"
-                    >
-                      Reset Filter
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* 2. GALLERY AND DASHBOARD LEVEL SWITCHER ROW                  */}
+        {/* GALLERY, DASHBOARD & OUR CHANNEL LEVEL SWITCHER ROW          */}
         {/* ============================================================ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-white/[0.08]">
-          <div className="flex items-center space-x-2 bg-[#12131C] p-1.5 rounded-2xl border border-white/[0.08] shadow-inner">
+          <div className="flex flex-wrap items-center gap-2 bg-[#12131C] p-1.5 rounded-2xl border border-white/[0.08] shadow-inner">
             <button
               onClick={() => handleTabChange('dashboard')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
                 activeTab === 'dashboard'
                   ? 'bg-gradient-to-r from-[#FF4D36] to-[#FF7A59] text-white shadow-[0_0_18px_rgba(255,77,54,0.45)]'
                   : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
@@ -349,7 +106,7 @@ export default function HomePage() {
 
             <button
               onClick={() => handleTabChange('gallery')}
-              className={`px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
                 activeTab === 'gallery'
                   ? 'bg-[#6B70F0] text-white shadow-[0_0_18px_rgba(107,112,240,0.45)]'
                   : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
@@ -358,7 +115,22 @@ export default function HomePage() {
               <FolderKanban className="w-4 h-4" />
               <span>Projects Gallery</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold ml-1">
-                {filteredProjects.length}
+                {projects.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleTabChange('channel')}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center space-x-2 ${
+                activeTab === 'channel'
+                  ? 'bg-gradient-to-r from-red-600 via-[#FF4D36] to-[#FF7A59] text-white shadow-[0_0_18px_rgba(255,0,0,0.45)]'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <Youtube className="w-4 h-4 text-red-500 fill-red-500/20" />
+              <span>Our Channel</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 font-bold ml-1 hidden md:inline">
+                @rsmglobalsatsang
               </span>
             </button>
           </div>
@@ -366,7 +138,11 @@ export default function HomePage() {
           <div className="flex items-center space-x-3 text-xs font-mono text-[#9FA4B8]">
             <span className="hidden sm:inline">Active Level:</span>
             <span className="text-white font-bold px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.08] uppercase tracking-wider text-[11px]">
-              {activeTab === 'dashboard' ? 'Studio Dashboard' : 'Media Gallery'}
+              {activeTab === 'dashboard'
+                ? 'Studio Dashboard'
+                : activeTab === 'channel'
+                ? 'RSM Global Satsang (@rsmglobalsatsang)'
+                : 'Projects Gallery'}
             </span>
           </div>
         </div>
@@ -416,7 +192,15 @@ export default function HomePage() {
                   className="glass-panel px-6 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/[0.08] hover:border-white/[0.2] transition-all flex items-center space-x-2"
                 >
                   <FolderKanban className="w-4 h-4 text-[#6B70F0]" />
-                  <span>Projects Gallery ({filteredProjects.length})</span>
+                  <span>Projects Gallery ({projects.length})</span>
+                </button>
+
+                <button
+                  onClick={() => handleTabChange('channel')}
+                  className="px-6 py-3 rounded-xl text-sm font-semibold text-white border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-all flex items-center space-x-2 shadow-[0_4px_20px_rgba(255,0,0,0.25)]"
+                >
+                  <Youtube className="w-4 h-4 text-red-500 fill-red-500/20" />
+                  <span>Our Channel Feed</span>
                 </button>
 
                 <button
@@ -595,6 +379,11 @@ export default function HomePage() {
             </div>
 
           </div>
+        ) : activeTab === 'channel' ? (
+          /* ============================================================ */
+          /* OUR CHANNEL VIEW (RSM Global Satsang Official Hub)           */
+          /* ============================================================ */
+          <OurChannelView onOpenIngest={() => setIsIngestOpen(true)} />
         ) : (
           /* ============================================================ */
           /* GALLERY VIEW (Projects Repository)                           */
@@ -618,10 +407,8 @@ export default function HomePage() {
             </div>
 
             <ProjectGallery
-              projects={filteredProjects}
+              projects={projects}
               onOpenIngest={() => setIsIngestOpen(true)}
-              searchTerm={globalSearchQuery}
-              onSearchChange={setGlobalSearchQuery}
             />
           </div>
         )}

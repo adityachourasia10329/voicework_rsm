@@ -2,26 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal, Cpu, Search, X } from 'lucide-react';
+import { Waves, Plus, Layers, LayoutDashboard, FolderKanban, SlidersHorizontal, Cpu, Youtube } from 'lucide-react';
+
+export type NavTab = 'dashboard' | 'gallery' | 'channel' | 'editor';
 
 interface NavbarProps {
   onOpenIngest?: () => void;
-  activeTab?: 'dashboard' | 'gallery' | 'editor';
-  onTabChange?: (tab: 'dashboard' | 'gallery' | 'editor') => void;
+  activeTab?: NavTab;
+  onTabChange?: (tab: NavTab) => void;
   projectCount?: number;
-  searchQuery?: string;
-  onSearchChange?: (query: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenIngest,
   activeTab = 'dashboard',
   onTabChange,
-  projectCount,
-  searchQuery,
-  onSearchChange
+  projectCount
 }) => {
-  const handleNavClick = (tab: 'dashboard' | 'gallery' | 'editor') => {
+  const handleNavClick = (tab: NavTab) => {
     if (onTabChange) {
       onTabChange(tab);
     } else {
@@ -53,34 +51,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
         </Link>
-
-        {/* Global Search Bar in Top Header */}
-        {onSearchChange !== undefined && (
-          <div className="hidden md:flex items-center flex-1 max-w-sm mx-2">
-            <div className="relative w-full">
-              <Search className="w-3.5 h-3.5 text-[#FF4D36] absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery || ''}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Quick search (Ctrl+K)..."
-                className="w-full bg-[#12131C] border border-white/[0.1] rounded-xl pl-8 pr-8 py-1.5 text-xs text-white placeholder-[#646982] focus:outline-none focus:border-[#FF4D36] transition-colors font-sans"
-              />
-              {searchQuery ? (
-                <button
-                  onClick={() => onSearchChange('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#646982] hover:text-white"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] text-[#9FA4B8] border border-white/[0.08]">
-                  ⌘K
-                </kbd>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Center Futuristic Pill Navigation */}
         <div className="flex items-center space-x-5">
@@ -115,6 +85,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
+              onClick={() => handleNavClick('channel')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
+                activeTab === 'channel'
+                  ? 'bg-gradient-to-r from-red-600 via-[#FF4D36] to-[#FF7A59] text-white shadow-[0_0_15px_rgba(255,0,0,0.45)] font-semibold'
+                  : 'text-[#9FA4B8] hover:text-white hover:bg-white/[0.04]'
+              }`}
+              title="RSM Global Satsang YouTube Channel"
+            >
+              <Youtube className="w-3.5 h-3.5 text-red-500 fill-red-500/20" />
+              <span>Our Channel</span>
+            </button>
+
+            <button
               onClick={() => handleNavClick('editor')}
               className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 transition-all ${
                 activeTab === 'editor'
@@ -130,6 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </button>
           </nav>
+
 
           {/* Real-time Architecture Status Indicator (bpssite telemetry style) */}
           <div className="hidden xl:flex items-center space-x-3">
