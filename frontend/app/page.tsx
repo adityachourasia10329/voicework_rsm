@@ -314,7 +314,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h4 className="text-base font-heading font-bold text-white">
-                    {filteredProjects.length} Workspaces in Hot Cache Repository
+                    {projects.length} Workspaces in Hot Cache Repository
                   </h4>
                   <p className="text-xs text-[#9FA4B8] mt-0.5 max-w-xl">
                     Multi-stem isolated sessions ready for spectrogram frequency inspection, surgical time-bracket flagging, and video remuxing.
