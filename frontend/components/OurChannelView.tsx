@@ -32,10 +32,20 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
   const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
 
-  const handleCopyLink = (video: RSMChannelVideo, e: React.MouseEvent) => {
+  const getVideoWatchUrl = (video: RSMChannelVideo): string => {
+    if (video.youtubeUrl && video.youtubeUrl.includes('/watch?v=')) {
+      return video.youtubeUrl;
+    }
+    if (video.youtubeId) {
+      return `https://www.youtube.com/watch?v=${video.youtubeId}`;
+    }
+    return `https://www.youtube.com/watch?v=${video.id}`;
+  };
+
+  const handleCopyLink = (url: string, videoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(video.youtubeUrl);
-    setCopiedId(video.id);
+    navigator.clipboard.writeText(url);
+    setCopiedId(videoId);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -190,6 +200,7 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
       <div className="space-y-4">
         {filteredVideos.map((video) => {
           const isExpanded = expandedVideoId === video.id;
+          const watchUrl = getVideoWatchUrl(video);
 
           return (
             <div
@@ -201,8 +212,14 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
                 
                 {/* Left: Thumbnail & Core Metadata */}
                 <div className="flex items-start space-x-4 sm:space-x-5 flex-1 min-w-0">
-                  {/* Video Thumbnail Box with Play Badge */}
-                  <div className="relative w-28 h-20 sm:w-36 sm:h-24 rounded-xl overflow-hidden bg-[#12131C] border border-white/[0.1] flex-shrink-0 group/thumb shadow-md">
+                  {/* Video Thumbnail Box with Play Badge (Clickable to open YouTube video) */}
+                  <a
+                    href={watchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative w-28 h-20 sm:w-36 sm:h-24 rounded-xl overflow-hidden bg-[#12131C] border border-white/[0.1] flex-shrink-0 group/thumb shadow-md block cursor-pointer"
+                    title={`Watch "${video.title}" on YouTube`}
+                  >
                     <img
                       src={video.thumbnailUrl}
                       alt={video.title}
@@ -214,7 +231,7 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
                     <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white font-medium">
                       {video.durationFormatted}
                     </span>
-                  </div>
+                  </a>
 
                   {/* Video Details */}
                   <div className="flex-1 min-w-0">
@@ -257,20 +274,20 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
                       <div className="flex items-center space-x-1.5">
                         <Youtube className="w-3.5 h-3.5 text-red-500 fill-red-500/20" />
                         <a
-                          href={video.youtubeUrl}
+                          href={watchUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#9FA4B8] hover:text-white underline underline-offset-2 flex items-center space-x-1 transition-colors"
-                          title="Open actual YouTube link"
+                          title="Open actual YouTube video"
                         >
-                          <span className="truncate max-w-[150px] sm:max-w-xs">{video.youtubeUrl}</span>
+                          <span className="truncate max-w-[150px] sm:max-w-xs">{watchUrl}</span>
                           <ExternalLink className="w-3 h-3" />
                         </a>
 
                         <button
-                          onClick={(e) => handleCopyLink(video, e)}
+                          onClick={(e) => handleCopyLink(watchUrl, video.id, e)}
                           className="p-1 rounded hover:bg-white/[0.08] text-[#646982] hover:text-white transition-colors"
-                          title="Copy YouTube URL"
+                          title="Copy YouTube video URL"
                         >
                           {copiedId === video.id ? (
                             <Check className="w-3 h-3 text-[#27A376]" />
@@ -300,11 +317,11 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
 
                   {/* Direct YouTube Watch Button */}
                   <a
-                    href={video.youtubeUrl}
+                    href={watchUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-white text-xs font-semibold transition-colors flex items-center space-x-1.5"
-                    title="Watch on YouTube"
+                    className="px-3.5 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-white text-xs font-semibold transition-colors flex items-center space-x-1.5 shadow-[0_0_12px_rgba(255,0,0,0.2)]"
+                    title="Watch video on YouTube"
                   >
                     <Youtube className="w-3.5 h-3.5 fill-red-500" />
                     <span>Watch YT</span>
@@ -364,12 +381,25 @@ export const OurChannelView: React.FC<OurChannelViewProps> = ({ onOpenIngest }) 
                         <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[11px] font-mono">
                           <span className="text-[#FF7A59] font-medium">{clip.timeRange}</span>
 
-                          <Link
-                            href={`/editor/${video.code}`}
-                            className="text-[#6B70F0] hover:text-[#8E93FF] font-semibold flex items-center space-x-1 transition-colors"
-                          >
-                            <span>Edit Clip &rarr;</span>
-                          </Link>
+                          <div className="flex items-center space-x-2">
+                            <a
+                              href={`${watchUrl}&t=${clip.start_time}s`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#9FA4B8] hover:text-red-400 font-medium flex items-center space-x-1 transition-colors"
+                              title="Watch clip segment on YouTube"
+                            >
+                              <Youtube className="w-3 h-3 text-red-500" />
+                              <span>Watch</span>
+                            </a>
+                            <span className="text-[#646982]">&bull;</span>
+                            <Link
+                              href={`/editor/${video.code}`}
+                              className="text-[#6B70F0] hover:text-[#8E93FF] font-semibold flex items-center space-x-1 transition-colors"
+                            >
+                              <span>Edit &rarr;</span>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     ))}

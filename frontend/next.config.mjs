@@ -4,7 +4,7 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     unoptimized: true,
-    domains: ['images.unsplash.com', 'commondatastorage.googleapis.com'],
+    domains: ['images.unsplash.com', 'commondatastorage.googleapis.com', 'i.ytimg.com', 'img.youtube.com'],
   },
 };
 
