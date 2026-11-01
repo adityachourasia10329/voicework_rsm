@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { INITIAL_PROJECTS } from '../../../../lib/mockData';
+import { INITIAL_PROJECTS } from '@/lib/mockData';
 
 /**
  * Dual-Route Video Resolver API

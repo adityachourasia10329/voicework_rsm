@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { generate5CharCode } from '../../../../lib/codeGenerator';
+import { generate5CharCode } from '@/lib/codeGenerator';
 
 /**
  * YouTube WebSub (PubSubHubbub) Webhook Listener

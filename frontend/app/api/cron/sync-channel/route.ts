@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generate5CharCode } from '../../../../lib/codeGenerator';
-import { INITIAL_PROJECTS } from '../../../../lib/mockData';
+import { generate5CharCode } from '@/lib/codeGenerator';
+import { INITIAL_PROJECTS } from '@/lib/mockData';
 
 /**
  * YouTube Channel Cron Ingestor

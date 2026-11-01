@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { INITIAL_PROJECTS, MOCK_TRANSCRIPTS } from '../../../../lib/mockData';
+import { INITIAL_PROJECTS, MOCK_TRANSCRIPTS } from '@/lib/mockData';
 
 /**
  * Unified Instant Search API
