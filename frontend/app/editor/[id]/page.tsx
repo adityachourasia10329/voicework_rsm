@@ -10,6 +10,7 @@ export function generateStaticParams() {
 }
 
 
-export default function EditorPage({ params }: { params: { id: string } }) {
-  return <EditorClient projectId={params.id} />;
+export default async function EditorPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  const resolved = await Promise.resolve(params);
+  return <EditorClient projectId={resolved.id} />;
 }

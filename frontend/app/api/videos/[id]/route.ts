@@ -12,9 +12,10 @@ import { INITIAL_PROJECTS } from '@/lib/mockData';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
-  const token = params.id.trim();
+  const resolvedParams = await Promise.resolve(params);
+  const token = resolvedParams.id.trim();
   const tokenUpper = token.toUpperCase();
 
   // 1. Try resolving via 5-character code
